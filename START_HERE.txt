@@ -1,0 +1,17 @@
+LUCERO GO — QUICK START
+
+1. DASHBOARD
+Open index.html in a browser (on a computer, double-click it). For iPhone, publish index.html as a static website using GitHub Pages or Netlify Drop. Open its HTTPS link in Safari and choose Share > Add to Home Screen.
+Use “Simulate next day” to create a new day's fictional data. Use “Export JSON” to back up your history. This browser stores the history locally: do not clear its site data.
+
+2. IPHONE WIDGET
+Install Scriptable from the App Store. Create a new script, paste the contents of LuceroGO.js, and name it LuceroGO. Add a medium or large Scriptable widget to your Home Screen, then configure its Script field to LuceroGO. Initially it displays the Day 1 sample data.
+
+3. CONNECT WIDGET TO DASHBOARD
+Upload the dashboard's exported lucero-go-data.json to a public HTTPS address (for example a GitHub repository with GitHub Pages or a static host). Edit FEED_URL at the top of the Scriptable script to point to that JSON file. Scriptable then fetches the latest published day on refresh. You must publish a new export after advancing the simulation. A fully automatic shared feed would require a hosted backend, which is not included in this starter kit.
+
+4. SCORING
+10 points per GO minute + 1 point per view. Day 1 minutes are estimated as 24 minutes per trip, and future days use simulated durations. Views are fictional. Day 1 line views total 19,060, correcting earlier contradictory reported totals.
+
+5. NOTE
+The dashboard and widget are separate until the public JSON feed is configured. Widget refresh frequency is controlled by iOS and is not truly live.
