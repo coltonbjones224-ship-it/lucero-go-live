@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0c1817"><title>Lucero Transit | Vehicle Tracker</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#eff9f4;background:#0b1716}*{box-sizing:border-box}
+body{margin:0}header{padding:17px max(16px,calc((100vw - 1400px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #29413b;background:#10221f}
+h1{font-size:23px;margin:2px 0}small,.muted{color:#a4bdb2}a{color:#8af3bd}header a{font-size:13px}
+main{max-width:1400px;margin:auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+.panel{background:#152824;border:1px solid #345149;border-radius:16px;overflow:hidden}.panelHead{padding:15px 16px;border-bottom:1px solid #345149}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}select,button,input{font:inherit;border:1px solid #496a60;background:#213d35;color:white;border-radius:9px;padding:9px 10px}
+button{cursor:pointer}button:hover{background:#2c5646}button:focus-visible,select:focus-visible{outline:2px solid #6fe7ac}
+#map{width:100%;height:auto;display:block;background:#122c29;touch-action:pan-y}
+.road{stroke:#33524c;stroke-width:15;stroke-linecap:round;fill:none}.roadInner{stroke:#1a3b36;stroke-width:11;stroke-linecap:round;fill:none}
+.route{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;opacity:.64}.route.selected{stroke-width:7;opacity:1}
+.stop{fill:#ecfff6;stroke:#14342c;stroke-width:2;cursor:pointer}.stop.selected{fill:#facc15;stroke:#fff;stroke-width:3}
+.vehicle{cursor:pointer;stroke:#0a201a;stroke-width:2.5}.vehicle.selected{stroke:white;stroke-width:4}
+.maplabel{font-size:12px;fill:#e6fff0;font-weight:600;paint-order:stroke;stroke:#0b2621;stroke-width:3px;pointer-events:none}
+.mapnote{font-size:10px;fill:#9fbfb0}.status{display:inline-block;padding:4px 8px;border-radius:100px;background:#205b42;color:#a1ffd0;font-size:11px}
+#details{padding:16px;min-height:240px}#arrivals{padding:8px 16px 16px;max-height:410px;overflow:auto}
+.arrival{display:grid;grid-template-columns:50px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #2b473f;cursor:pointer}
+.chip{display:inline-block;border-radius:7px;padding:5px 7px;font-weight:800;color:white;text-align:center;font-size:12px}
+.vehicleRow{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:10px 0}
+.progress{height:7px;background:#355147;border-radius:8px;overflow:hidden}.progress div{height:100%;background:#79e7a7}
+.meta{font-size:12px;color:#a9c4b7;line-height:1.6}.footer{font-size:12px;padding:13px 16px;color:#b0c7bb;border-top:1px solid #345149}
+.legend{padding:9px 16px;font-size:12px;color:#a4bdb2;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+h2{font-size:16px;margin:0}h3{margin:0 0 10px;font-size:15px}
+@media(max-width:900px){main{grid-template-columns:1fr}#map{max-height:70vh}header{padding:14px 16px}}
+</style></head>
+<body><header><div><small>LUCERO TRANSIT · FICTIONAL NETWORK</small><h1>Live Vehicle Tracker <span class="status">● SIMULATED</span></h1><small id="clock">Lucero local time</small></div><a href="./index.html">GO leaderboard ↗</a></header>
+<main>
+<section class="panel"><div class="panelHead"><h2>System map</h2><div class="controls">
+<select id="mode" aria-label="Transport mode"><option value="all">All modes</option><option value="Metro">Metro</option><option value="Bus">Bus</option><option value="Light rail">Light rail</option></select>
+<select id="route" aria-label="Transit line"><option value="all">All lines</option></select>
+<button id="reset">Show all</button>
+</div></div><svg id="map" viewBox="0 0 900 630" role="img" aria-label="Schematic map of Lucero showing simulated vehicles and stops">
+<defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#24453e" stroke-width=".8"/></pattern></defs>
+<rect width="900" height="630" fill="url(#grid)"/>
+<path class="road" d="M30 315H870 M450 30V600 M90 90L810 560 M120 520L770 90"/>
+<path class="roadInner" d="M30 315H870 M450 30V600 M90 90L810 560 M120 520L770 90"/>
+<g id="routes"></g><g id="stops"></g><g id="vehicles"></g>
+<text class="maplabel" x="440" y="272">DOWNTOWN</text>
+<text class="mapnote" x="12" y="614">Schematic layout · not geographic or surveyed</text>
+</svg><div class="legend"><span id="counts">Calculating vehicles…</span><span>Tap a vehicle or stop for details</span></div></section>
+<div><section class="panel"><div class="panelHead"><h2>Vehicle details</h2></div><div id="details">Select a vehicle on the map to follow its trip.</div></section>
+<section class="panel" style="margin-top:14px"><div class="panelHead"><h2>Next arrivals</h2><div class="controls"><select id="stopSelect" aria-label="Select stop"></select></div></div><div id="arrivals"></div></section></div>
+</main><div class="footer">Illustrative simulation using provisional stops, coordinates, headways and travel times. Not real vehicle positions, real-world ETAs or official timetables. Vehicle positions are calculated in your browser from the clock. Lucero GO statistics are read from the existing data.json feed when available.</div>
+<script>
+"use strict";
+const ZONE="America/New_York", DATA_URL="./data.json";
+const S={
+"Manassas State":[105,115],"Young University":[130,400],"Gage Gehris":[85,440],"Golden Coast":[90,225],"Montclair":[805,205],"Clifton":[675,510],"Government Center":[455,310],"Post Street":[385,310],"Cordan Street":[510,310],"Joseph Square":[480,135],"Winnipeg Avenue":[640,85],"Zoo":[735,105],"Walker Road":[185,515],"Freedom Stadium":[570,515],"Stadium Hall":[560,440],"Southside":[470,425],"Bancroft":[515,575],"NLCC":[200,165],"Central Hospital":[605,360],"New Branswell Avenue":[625,475],"Trintrilly":[835,560],"C Street":[270,285],"Ox Town":[330,185],"Phoenix Heights":[365,75],"Court House":[300,375],"Culbreth":[760,315],"Dames Street":[570,165],"Castle Rock":[230,380],"West End":[245,310],"Airport Junction":[675,285]
+};
+const R=[
+{id:"Red",mode:"Metro",color:"#e53935",stops:["Golden Coast","West End","Post Street","Government Center","Cordan Street","Airport Junction","Montclair"],mins:48,head:9},
+{id:"Green",mode:"Metro",color:"#22c55e",stops:["Manassas State","Joseph Square","Government Center","Southside","New Branswell Avenue","Clifton"],mins:57,head:12,all:true},
+{id:"Orange",mode:"Metro",color:"#f28c28",stops:["Manassas State","Dames Street","Joseph Square","Government Center","Cordan Street","Montclair"],mins:51,head:12},
+{id:"Yellow",mode:"Metro",color:"#eab308",stops:["Gage Gehris","Young University","Castle Rock","Post Street","Government Center"],mins:40,head:12,all:true},
+{id:"Purple",mode:"Metro",color:"#9333ea",stops:["Government Center","Joseph Square","Dames Street","Winnipeg Avenue","Zoo"],mins:31,head:12},
+{id:"Pink",mode:"Metro",color:"#ec77c4",stops:["Walker Road","Court House","Government Center","Stadium Hall","Freedom Stadium"],mins:36,head:14},
+{id:"2",mode:"Metro",color:"#8899ae",stops:["Stadium Hall","Government Center","Joseph Square"],mins:22,head:15},
+{id:"Southside Shuttle",mode:"Metro",color:"#b7c5d6",stops:["Government Center","Southside","Bancroft"],mins:21,head:15,all:true},
+{id:"D4",mode:"Bus",color:"#728ca4",stops:["NLCC","West End","Post Street","Government Center","Central Hospital"],mins:42,head:20},
+{id:"D6",mode:"Bus",color:"#c18a52",stops:["Joseph Square","Dames Street","Government Center","Central Hospital"],mins:32,head:20,all:true},
+{id:"S34",mode:"Bus",color:"#df79a0",stops:["New Branswell Avenue","Clifton","Trintrilly"],mins:38,head:30},
+{id:"A",mode:"Light rail",color:"#06b6d4",stops:["C Street","Ox Town","Phoenix Heights"],mins:25,head:15},
+{id:"S",mode:"Light rail",color:"#67e8f9",stops:["C Street","Post Street","Government Center"],mins:20,head:12},
+{id:"C",mode:"Light rail",color:"#38bdf8",stops:["Court House","Government Center","Culbreth"],mins:30,head:15},
+{id:"P",mode:"Light rail",color:"#0ea5e9",stops:["Montclair","Airport Junction","Culbreth"],mins:24,head:15}
+];
+const $=id=>document.getElementById(id);
+let selectedVehicle=null, selectedStop="Government Center", liveStatuses=null;
+function localParts(t){
+const p=new Intl.DateTimeFormat("en-US",{timeZone:ZONE,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23",weekday:"short"}).formatToParts(t);
+return Object.fromEntries(p.map(x=>[x.type,x.value]));
+}
+function state(r,minutes,day){
+if(r.all)return true;
+if(r.id==="D4")return minutes>=370&&minutes<1335;
+if(r.id==="S34")return minutes>=350&&minutes<1290;
+if(r.mode==="Light rail")return minutes>=330&&minutes<(day==="Fri"||day==="Sat"?1440:1380);
+return minutes>=270;
+}
+function headway(r,mins){
+if(r.id==="D6")return mins<270?25:mins<370||mins>=1335?20:(mins>=420&&mins<600||mins>=960&&mins<1140)?15:20;
+if(r.id==="D4")return (mins>=420&&mins<600||mins>=960&&mins<1140)?15:20;
+if(r.id==="S34")return (mins>=420&&mins<600||mins>=960&&mins<1140)?20:30;
+if(r.all&&mins<270)return Math.max(r.head,20);
+return r.head;
+}
+function activeStops(r,mins){return r.id==="Yellow"&&mins<270?[...r.stops,"Cordan Street","Airport Junction","Montclair"]:r.stops;}
+function dist(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1]);}
+function geometry(names){const seg=[];let total=0;for(let i=0;i<names.length-1;i++){let len=dist(S[names[i]],S[names[i+1]]);seg.push(len);total+=len;}return {seg,total};}
+function position(names,p){const {seg,total}=geometry(names);let target=Math.max(0,Math.min(1,p))*total;for(let i=0;i<seg.length;i++){if(target<=seg[i]||i===seg.length-1){let f=seg[i]?target/seg[i]:0;return {x:S[names[i]][0]+f*(S[names[i+1]][0]-S[names[i]][0]),y:S[names[i]][1]+f*(S[names[i+1]][1]-S[names[i]][1]),next:names[i+1],fraction:f,index:i};}target-=seg[i];}return {x:0,y:0,next:names.at(-1),index:names.length-2,fraction:1};}
+function delayFor(id){let n=0;for(let c of id)n=(n*31+c.charCodeAt(0))%97;return n%9===0?3:n%13===0?2:0;}
+function build(now){
+const p=localParts(now), mins=+p.hour*60+(+p.minute)+(+p.second)/60, list=[];
+for(const r of R){
+if(!state(r,mins,p.weekday))continue;
+const stops=activeStops(r,mins), travel=r.mins+(r.id==="Yellow"&&mins<270?12:0);
+const head=headway(r,mins), cycle=2*travel+8;
+const fleet=Math.max(1,Math.ceil(cycle/head));
+for(let k=0;k<fleet;k++){
+const offset=(mins-k*head+1440*3)%cycle;
+if(offset>=2*travel)continue;
+const outbound=offset<travel, progress=outbound?offset/travel:(offset-travel)/travel;
+const names=outbound?stops:[...stops].reverse();
+const pos=position(names,progress), id=r.id+"-"+String(k+1).padStart(2,"0");
+const delay=delayFor(id);
+list.push({id,r,stops:names,progress,travel,head,pos,delay,direction:names.at(-1),minutesRemaining:(1-progress)*travel,minutesSinceStart:progress*travel});
+}}
+return {list,mins,p};
+}
+function make(tag,attrs={},parent){const el=document.createElementNS("http://www.w3.org/2000/svg",tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);if(parent)parent.appendChild(el);return el;}
+function renderMap(model){
+const routes=$("routes"),stops=$("stops"),vehicles=$("vehicles");routes.replaceChildren();stops.replaceChildren();vehicles.replaceChildren();
+const mode=$("mode").value,line=$("route").value,visible=r=>(mode==="all"||r.mode===mode)&&(line==="all"||r.id===line);
+for(const r of R.filter(visible)){
+const names=activeStops(r,model.mins),coords=names.map(n=>S[n].join(",")).join(" ");
+make("polyline",{points:coords,stroke:r.color,class:"route"+(line===r.id?" selected":"")},routes);
+}
+const stopNames=new Set(R.filter(visible).flatMap(r=>activeStops(r,model.mins)));
+for(const n of stopNames){const [x,y]=S[n],circle=make("circle",{cx:x,cy:y,r:n===selectedStop?7:4.5,class:"stop"+(n===selectedStop?" selected":"")},stops);circle.addEventListener("click",()=>{selectedStop=n;$("stopSelect").value=n;render();});make("title",{},circle).textContent=n;}
+for(const v of model.list.filter(v=>visible(v.r))){
+const c=make("circle",{cx:v.pos.x,cy:v.pos.y,r:v.id===selectedVehicle?10:7,fill:v.r.color,class:"vehicle"+(v.id===selectedVehicle?" selected":"")},vehicles);
+c.addEventListener("click",()=>{selectedVehicle=v.id;render();});make("title",{},c).textContent=v.r.id+" vehicle "+v.id+" → "+v.direction;
+}
+$("counts").textContent=model.list.filter(v=>visible(v.r)).length+" simulated vehicles in service";
+}
+function arrivals(model){
+const found=[];
+for(const v of model.list){
+const idx=v.stops.indexOf(selectedStop);if(idx<0)continue;
+const {seg,total}=geometry(v.stops);const fractionAt=seg.slice(0,idx).reduce((a,b)=>a+b,0)/total;
+if(fractionAt>=v.progress)found.push({v,eta:Math.max(0,Math.ceil((fractionAt-v.progress)*v.travel+v.delay))});
+}
+found.sort((a,b)=>a.eta-b.eta);
+const el=$("arrivals");el.replaceChildren();
+if(!found.length){el.textContent="No approaching vehicles at this stop right now. Try another stop or time.";return;}
+for(const {v,eta} of found.slice(0,10)){
+const row=document.createElement("div");row.className="arrival";
+const chip=document.createElement("span");chip.className="chip";chip.style.background=v.r.color;chip.textContent=v.r.id;
+const info=document.createElement("div");info.innerHTML="<b></b><div class='meta'></div>";info.children[0].textContent="To "+v.direction;info.children[1].textContent=v.id+(v.delay?" · +"+v.delay+" min delay":" · on time");
+const time=document.createElement("b");time.textContent=eta===0?"Due":eta+" min";
+row.append(chip,info,time);row.onclick=()=>{selectedVehicle=v.id;render();};el.append(row);
+}}
+function details(model){
+const el=$("details"),v=model.list.find(x=>x.id===selectedVehicle);
+if(!v){el.innerHTML="<p class='muted'>Tap a vehicle on the map or choose an arrival below to follow its trip.</p><p class='meta'>Vehicle movement is calculated every second. Route shapes and stop locations are schematic placeholders until Lucero's full stop map is supplied.</p>";return;}
+el.replaceChildren();
+const heading=document.createElement("div");heading.className="vehicleRow";
+const chip=document.createElement("span");chip.className="chip";chip.style.background=v.r.color;chip.textContent=v.r.id+" · "+v.r.mode;
+const id=document.createElement("b");id.textContent=v.id;heading.append(chip,id);el.append(heading);
+const title=document.createElement("h3");title.textContent="Toward "+v.direction;el.append(title);
+const next=document.createElement("p");next.textContent="Next stop: "+v.pos.next;el.append(next);
+const bar=document.createElement("div");bar.className="progress";const fill=document.createElement("div");fill.style.width=Math.round(v.progress*100)+"%";bar.append(fill);el.append(bar);
+const info=document.createElement("p");info.className="meta";info.textContent=Math.round(v.progress*100)+"% of trip · "+Math.ceil(v.minutesRemaining)+" min to terminus · "+(v.delay?"Delayed "+v.delay+" min":"On time")+" · Approx. "+v.head+" min headway";el.append(info);
+const btn=document.createElement("button");btn.textContent="Show only "+v.r.id;btn.onclick=()=>{$("route").value=v.r.id;$("mode").value="all";render();};el.append(btn);
+}
+function render(){
+const model=build(new Date());const mode=$("mode").value;
+const opts=R.filter(r=>mode==="all"||r.mode===mode);
+const selected=$("route").value;
+$("route").replaceChildren(new Option("All lines","all"),...opts.map(r=>new Option(r.id+" · "+r.mode,r.id)));
+$("route").value=opts.some(r=>r.id===selected)?selected:"all";
+const now=new Date();$("clock").textContent="Lucero local time · "+new Intl.DateTimeFormat("en-US",{timeZone:ZONE,weekday:"short",hour:"numeric",minute:"2-digit",second:"2-digit"}).format(now);
+renderMap(model);arrivals(model);details(model);
+}
+for(const n of Object.keys(S).sort())$("stopSelect").add(new Option(n,n));
+$("stopSelect").value=selectedStop;
+$("stopSelect").onchange=e=>{selectedStop=e.target.value;render();};
+$("mode").onchange=()=>{$("route").value="all";render();};
+$("route").onchange=render;
+$("reset").onclick=()=>{$("mode").value="all";$("route").value="all";selectedVehicle=null;render();};
+render();setInterval(render,1000);
+// Optional integration: retain existing GO feed and expose its service statuses without
+// allowing a stale hourly JSON snapshot to freeze second-by-second vehicle animation.
+fetch(DATA_URL+"?v="+Date.now()).then(r=>r.ok?r.json():null).then(d=>{
+if(d&&Array.isArray(d.lines)){liveStatuses=Object.fromEntries(d.lines.map(l=>[l.id,l.status]));}
+}).catch(()=>{});
+</script></body></html>
