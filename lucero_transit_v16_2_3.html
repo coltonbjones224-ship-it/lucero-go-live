@@ -1,0 +1,973 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172b3d"><title>Lucero Transit · v16.2</title><style>
+*{box-sizing:border-box}body{margin:0;background:#0c1d2b;color:#f4f8ff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}main{max-width:720px;margin:auto}header{padding:23px 20px 12px;background:#172b3d}h1{margin:3px 0;font-size:25px}small,.muted{color:#a7bed0}a{color:#9fddff}nav{display:flex;justify-content:space-between;align-items:center}nav a{font-size:13px}.locator{background:#126b9a;padding:16px 20px 20px}select{width:100%;padding:15px 12px;border:0;border-radius:12px;background:#f1f9ff;color:#18384b;font-size:17px;font-weight:650;margin-top:9px}.hint{font-size:12px;color:#c1e5f5;margin-top:10px}.bar{padding:13px 20px;background:#132b3b;display:flex;justify-content:space-between;gap:10px;font-size:13px}.routes{background:#291407}.route{padding:20px;border-bottom:1px solid #663015}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.id{font-size:47px;line-height:1;font-weight:850;letter-spacing:-2px}.dest{font-size:21px;font-weight:760;margin-top:4px}.via{color:#e7a77f;font-size:14px;margin-top:5px}.eta{text-align:right;min-width:72px}.eta strong{font-size:45px;line-height:1;display:block}.eta small{color:#e6a581}.next{margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pill{border-radius:7px;padding:5px 8px;background:#59321c;font-size:12px;color:#ffcfb1}.last{background:#ff8c39;color:#2b1105;font-weight:800}.direction{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;color:#f7c2a0;font-size:12px}.direction button{padding:7px 14px;font-size:17px;background:#4a260f;border-color:#96522d}.direction .dots{letter-spacing:4px}.route{touch-action:pan-y}.inactiveToggle{display:block;width:100%;border:0;border-radius:0;background:#361c0d;color:#ff923e;font-weight:800;font-size:19px;padding:22px 12px;text-align:center}.inactiveToggle:hover{background:#4b2710}.inactive .route{opacity:.7}.inactive .eta strong{font-size:19px}.inactive .pill{background:#583326}.more{padding:12px 0 0;font-size:12px;color:#e9ac8c}.empty{padding:30px 20px;color:#ffd5b6}.footer{padding:18px 20px;font-size:12px;line-height:1.6;color:#afc4d0}button{font:inherit;border:1px solid #5185a0;background:#183f54;color:white;padding:7px 10px;border-radius:8px;cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #91e3ff}.always{display:inline-block;background:#205b43;color:#a2ffca;border-radius:5px;padding:3px 6px;font-size:11px;font-weight:800;margin-left:7px;vertical-align:middle}.coming{background:#57401b;color:#ffdd8b}.tag{color:#7be5a6;font-size:12px;font-weight:700}
+
+.route{cursor:pointer}.route:hover{background:#351b0d}.route:focus-visible{outline:3px solid #91e3ff;outline-offset:-3px}.details-hint{font-size:12px;color:#ffba8c;margin-top:12px}.sheet-backdrop{position:fixed;inset:0;background:#000b;z-index:20;display:flex;align-items:flex-end;justify-content:center}.sheet-backdrop[hidden]{display:none}.sheet{background:#122b3b;color:#f4f8ff;border-radius:22px 22px 0 0;width:min(100%,720px);max-height:92dvh;overflow:auto;padding:22px 22px 36px;box-shadow:0 -8px 40px #0008}.sheet-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}.sheet-title{font-size:34px;font-weight:850;margin:0}.sheet-close{font-size:24px;min-width:44px;min-height:44px}.sheet-section{margin-top:22px}.sheet-section h3{font-size:16px;margin:0 0 10px}.sheet-muted{color:#b6cbd7;font-size:14px;line-height:1.5}.sheet-dir{display:flex;gap:8px;margin:18px 0}.sheet-dir button{flex:1;font-size:13px;padding:12px 5px}.sheet-dir button.selected{background:#2b6e93;border-color:#89d5ff}.stop-line{border-left:3px solid var(--line);margin-left:8px;padding:10px 0 10px 20px;position:relative;font-size:14px}.stop-line:before{content:'';position:absolute;left:-8px;top:15px;width:13px;height:13px;border-radius:50%;background:#122b3b;border:3px solid var(--line)}.stop-line.selected{font-weight:800;color:#ffcf98}.stop-line.selected:before{background:#ffcf98;border-color:#ffcf98}.sheet-badge{display:inline-block;padding:5px 8px;background:#205b43;border-radius:7px;color:#a2ffca;font-size:12px;font-weight:750}.sheet-times{display:flex;flex-wrap:wrap;gap:8px}.sheet-times span{padding:9px 12px;border-radius:9px;background:#25465a;color:#e4f7ff;font-weight:700}.sheet-note{padding:12px;border-radius:10px;background:#203c4c;margin-top:10px;font-size:13px;line-height:1.5}body.sheet-open{overflow:hidden}
+
+/* Full-screen, Transit-inspired timetable */
+.sheet-backdrop{background:#170305;align-items:stretch}.sheet{width:min(100%,720px);max-height:100dvh;border-radius:0;background:#280508;color:#f6c1c2;padding:18px 20px 48px;box-shadow:none}.sheet-header{align-items:center}.sheet-header>div{display:none}.sheet-close{border:0;border-radius:50%;background:#9e4046;color:#31090c;font-size:34px;font-weight:800;width:52px;height:52px}.sheet-dir{margin:8px 0 14px;display:flex;gap:8px}.sheet-dir button{background:#431013;border:1px solid #6d2027;color:#ff9ca1;border-radius:12px;padding:12px 8px;font-weight:800}.sheet-dir button.selected{background:#a3323b;color:white;border-color:#d94b55}.departure-hero{color:var(--route);padding:6px 0 24px}.departure-code{font-size:clamp(75px,21vw,128px);font-weight:900;line-height:.99;letter-spacing:-5px}.departure-heading{font-size:clamp(24px,7vw,34px);font-weight:850;margin:10px 0 2px}.departure-destination{font-size:20px;font-weight:700;margin:5px 0}.departure-via{font-size:15px;opacity:.85}.departure-badges{display:flex;gap:8px;margin-top:14px}.departure-badges span{font-size:12px;font-weight:800;border:1px solid currentColor;border-radius:7px;padding:5px 8px}.departure-location{color:#e9a4a7;font-size:14px;margin:12px 0 20px}.departure-board{background:#571014;border:1px solid #791a22;border-radius:20px;overflow:hidden;margin-top:12px}.departure-row{display:flex;align-items:center;gap:12px;padding:19px 17px;border-bottom:1px solid #7b2228;color:#ffc7c9}.departure-row:last-child{border-bottom:0}.departure-row .when{font-size:25px;font-weight:800;white-space:nowrap}.departure-row .where{font-size:16px;flex:1;color:#e9a8ad}.departure-row .last{font-size:12px;font-weight:900;background:#ffb6bb;color:#591218;border-radius:8px;padding:5px 8px}.departure-day{font-size:22px;font-weight:800;color:#ffd6d8;margin:24px 4px 10px}.departure-empty{padding:20px;color:#f3b8bb}.departure-extra{margin:28px 0 0;color:#f2b9bc}.departure-extra summary{font-size:16px;font-weight:800;cursor:pointer;padding:12px 0}.departure-extra .sheet-muted{color:#efafb3}.departure-extra .stop-line:before{background:#280508}.departure-extra .stop-line.selected:before{background:#ffced1}.departure-extra .sheet-note{background:#491115;color:#ffd2d5}.departure-extra .sheet-section h3{color:#ffe0e1}
+ 
+.stop-line.stop-link{cursor:pointer;border-radius:9px;padding:11px 12px;margin:2px 0;transition:background .15s}
+.stop-line.stop-link:hover,.stop-line.stop-link:focus-visible{background:rgba(255,255,255,.11);outline:2px solid transparent}
+.stop-line.stop-link:after{content:'›';float:right;font-size:22px;line-height:18px;opacity:.75}
+.stop-detail-header{padding:18px 16px 8px}
+.stop-detail-header h3{font-size:24px;margin:8px 0}
+.stop-detail-back{border:1px solid rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.1);color:inherit;padding:9px 14px;font:inherit}
+.stop-service{display:flex;align-items:center;gap:12px;width:100%;border:0;border-radius:14px;padding:15px 14px;margin:9px 0;background:rgba(255,255,255,.1);color:inherit;text-align:left;font:inherit;cursor:pointer}
+.stop-service-code{font-size:23px;font-weight:900;min-width:70px}
+.stop-service-info{flex:1;min-width:0}
+.stop-service-info small{display:block;opacity:.72;margin-top:3px}
+.stop-service-chevron{font-size:24px}
+.stop-empty{opacity:.7;padding:20px 0}
+
+/* WMATA-inspired outlined line discs — Option 3 */
+.line-disc{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;min-width:38px;border:3px solid var(--disc);color:var(--disc);border-radius:50%;font-size:16px;font-weight:900;line-height:1;letter-spacing:0;background:#122b3b;vertical-align:middle}
+.line-disc.small{width:32px;height:32px;min-width:32px;border-width:2.5px;font-size:13px}
+.line-disc.large{width:92px;height:92px;min-width:92px;border-width:7px;font-size:30px;background:transparent}
+.disc-name{font-size:12px;font-weight:800;letter-spacing:0;vertical-align:middle;margin-left:8px}
+.route .id:has(.line-disc){display:flex;align-items:center;gap:6px;min-height:48px}
+.route .id .always{letter-spacing:0}
+.departure-code:has(.line-disc){letter-spacing:0;display:flex;align-items:center;gap:14px;min-height:105px}
+.departure-code .disc-name{font-size:35px;color:var(--route);margin-left:0}
+.stop-service-code:has(.line-disc){display:flex;align-items:center;gap:6px}
+.stop-neighborhood{display:block;margin:12px 0 4px 18px;padding:6px 10px;border-left:3px solid #66e7f0;color:#8ae7f3;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.09em}
+.delay-note{display:block;color:#ffd16d!important;font-size:11px!important;margin-top:5px;max-width:130px}.route:has(.delay-note){border-left:3px solid #f9bd56}
+
+.disruption-panel{margin:16px 0;padding:16px;border-radius:15px;background:#172d3c;border:1px solid #405264}
+.disruption-panel h3{margin:0 0 12px;font-size:17px}
+.incident-card{border:1px solid #80673a;background:#302d27;padding:12px;border-radius:12px;margin:10px 0}
+.incident-heading{color:#ffd16d;display:block;margin-bottom:7px}
+.affected-trips{border-top:1px solid #66543b;margin-top:10px;padding-top:10px}
+.affected-trip{display:flex;justify-content:space-between;gap:10px;margin-top:9px;font-size:12px}
+.affected-trip b{color:#ffd16d;white-space:nowrap}
+</style><style>.go-nav{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-top:13px}.go-nav span{font-size:11px;color:#a7bed0}.go-nav button,.go-track{background:#e8662e;border:0;color:white;font-weight:800;padding:12px;border-radius:11px}.go-route{padding:16px;background:#49171b;border-radius:15px;margin:18px 0}.go-route h3{margin:0 0 8px}.go-route button{display:block;margin:12px 0 0;width:100%;text-align:center}.go-rank{padding:13px 5px;border-bottom:1px solid #814047;display:flex;justify-content:space-between;gap:8px;font-size:13px}.go-rank b{color:#ffcb97}.go-buttons{display:flex;gap:5px;margin:10px 0;flex-wrap:wrap}.go-buttons button{font-size:12px;background:#57252a;border-color:#86414a}.go-buttons button.on{background:#e8662e;border-color:#e8662e}.tracker-overlay{position:fixed;inset:0;z-index:40;background:#10151b;display:flex;flex-direction:column}.tracker-overlay[hidden]{display:none}.tracker-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#1c2935}.tracker-overlay iframe{border:0;width:100%;flex:1;background:#10151b}.v135badge{border:0;cursor:pointer}.v135badge:focus-visible{outline:2px solid white}.go-route{background:#20374a;border:1px solid #3c5a70}.go-route h3{color:#f3f7fc}</style><style>
+/* v16.1 CITYBUS identity */
+.v161logo{display:inline-flex;align-items:center;white-space:nowrap;background:#ffc619;border-radius:9px;transform:skew(-9deg);padding:5px 10px;font-size:19px;font-weight:1000;letter-spacing:-1.4px;line-height:1.1;vertical-align:middle;margin-right:8px;box-shadow:inset 0 -2px 0 #e4a700}
+.v161logo i,.v161logo em{display:inline-block;font-style:italic;transform:skew(-2deg)}.v161logo i{color:#101010}.v161logo em{color:white}
+.v161citypill{font-size:40px!important;color:#ffc619!important;background:transparent!important;padding:0!important;border-radius:0!important;min-width:55px!important;line-height:1!important;text-align:left!important;letter-spacing:-2px}
+.v161citynumber{color:#ffc619!important;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.v161citynumber .v161logo{font-size:29px;letter-spacing:-2px;padding:9px 15px}
+.v161free{color:#6be7a0!important;border-color:#3ac97b!important}.v161citycard .id{color:#ffc619!important}.v161citycard .id .line-disc{display:none!important}
+.v16tracker{display:none!important}
+</style><style>/* v16.1 commuter route numbers: plain sky-blue numerals, no badges */
+.v161commuterpill{background:transparent!important;color:#55BCEB!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;min-width:55px!important;text-align:left!important;font-size:36px!important;line-height:1!important;letter-spacing:-1px}
+.v161commuterbadge{background:transparent!important;color:#55BCEB!important;border:0!important;border-radius:0!important;box-shadow:none!important;font-size:23px!important;font-weight:900!important;padding:4px!important}
+</style><style>
+/* v16.2 service browser and direction navigation */
+.v162route-mark{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:900}
+.v162busdisc{border:3px solid var(--disc);border-radius:50%;background:#142b3d;color:var(--disc);height:38px;min-width:38px;padding:0 4px;font-size:12px}
+.v16item .line-disc.small{flex-shrink:0}
+.v16item .v162findtext{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;flex:1}
+.v16item .v162findtext strong{font-size:13px;color:#f3f7fc}
+.v16item .v162findtext small{font-size:12px;opacity:.8;overflow-wrap:anywhere}
+.v16item .v161citypill,.v16item .v161commuterpill{display:inline-flex!important;flex-shrink:0}
+.v162-swipehint{text-align:center;color:#a7c5d9;font-size:12px;margin:6px 0 12px}
+.sheet-dir{touch-action:pan-y}
+</style><style>/* v16.2.1: keep plain commuter numbers within mobile route detail viewport */
+.departure-code.v163commuterhero{font-size:clamp(52px,16vw,76px)!important;line-height:1.08!important;letter-spacing:-2px!important;color:#55BCEB!important;display:block!important;min-height:0!important;max-width:100%!important;overflow-wrap:normal!important;white-space:nowrap!important;padding:0!important;margin:0!important}
+.departure-hero:has(.v163commuterhero){min-width:0;max-width:100%;overflow:hidden}
+@media(max-width:390px){.departure-code.v163commuterhero{font-size:58px!important}}
+</style><style>.v163topalert{margin:12px 0 16px;border:1px solid #e9a34e;background:#3b3023;border-radius:12px;padding:14px}.v163topalert h3{margin:3px 0 7px;color:#ffe1a3}.v163topalert p{margin:4px 0 12px}.v163topalert p:last-child{margin-bottom:0}</style></head><body><main><header><nav><small>LUCERO TRANSIT</small></nav><h1>Nearby departures <span class="tag">◉</span></h1><div class="hint">◉ Updating fictional arrivals · not live GPS</div></header><div id="workAlert" class="locator" style="display:none;border-color:#e6a64d;background:#392d20"><b>⚠ Weekend track work · Business Square</b><div class="hint" style="color:#ffe4b0">October 16–19: Red and Pink Lines suspended. Yellow Line trains run only Gage Gehris–Young University ↔ Lucero Convention Center–McNee every 15 minutes. FREE overnight Yellow Line replacement shuttle operates every 20 minutes. Alert expires Monday, October 19 at 4:30 AM.</div></div><div class="locator"><label for="station"><b>📍 Your Metro station</b></label><select id="station"></select><div class="hint">Choose a station in Lucero. No phone location is used.</div></div><div class="bar"><span id="clock">Lucero time</span><span id="count">Loading routes…</span></div><section id="routes" class="routes"></section><button id="inactiveToggle" class="inactiveToggle" aria-expanded="false">Show inactive lines ▾</button><section id="inactive" class="routes inactive" hidden></section><div class="footer">All times are fictional, deterministic predictions based on provisional schedules, not real vehicle GPS. Station lists reflect your updated line-by-line service information. Transfer grouping is shown for nearby Del Toro, Court Square and Court House. v11: All arrivals and automated delays are fictional estimates, not real-time vehicle data.</div></main><div id="detailsOverlay" class="sheet-backdrop" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Route details" id="detailsSheet"><div class="sheet-header"><div><div class="sheet-muted">LUCERO TRANSIT · ROUTE DETAILS</div><h2 class="sheet-title" id="detailsTitle"></h2><div id="detailsSub" class="sheet-muted"></div></div><button class="sheet-close" id="detailsClose" aria-label="Close route details">×</button></div><div id="detailsBody"></div></section></div>
+<script>
+'use strict';
+(function(){const now=new Date();const end=new Date('2026-10-19T04:30:00-04:00');const start=new Date('2026-10-16T00:00:00-04:00');const el=document.getElementById('workAlert');if(el)el.style.display=now>=start&&now<end?'block':'none';})();
+const START_NEW='2026-10-19';
+function weekendTrackWorkActive(){const now=new Date();return now>=new Date('2026-10-16T00:00:00-04:00')&&now<new Date('2026-10-19T04:30:00-04:00');}
+const J='Joseph Square - NLCC - Law Center', B='Bancroft - Southside', CV='Lucero Convention Center - McNee';
+const G='Government Center', Z='Winnipeg Avenue - Zoo', O='C Street - Ox Town';
+const STATIONS=[
+'Joseph Square - NLCC - Law Center','Northern Lucero Community College',
+'Gage Gehris - Young University','Castle Rock','Golden Coast','West End',O,CV,
+'Business Square',G,'Montclair','Walker Road Metro','Freedom Stadium',
+'Clifton','New Branswell Avenue - Arena','Cascades','Phoenix Heights',
+'Post Street','University of Lucero','Stadium Hall','Del Toro - Falmouth Square',
+'Court House','Court Square','Crossly Park - Camron Highway','Therman','Manassas',
+'Manassas State','8th Street - Park Avenue','Central Hospital',
+'Bing Center - Cordan Street','Southcity Crossing',B,'Westmore Avenue',
+'East McNee','22nd Street','22nd Street','16th Street','Culbreth','West Zoo','Woodley Park',
+'Willyum Street','Dames Street','Franklin Square','East Campus Transit Center','University of Lucero (West Campus)',
+'North Lucero High School','Newington Avenue','Trintrilly Metro','Aero Heights'
+];
+const L=[
+{id:'Yellow',mode:'Metro',color:'#f9d76e',stops:['Gage Gehris - Young University','Castle Rock','Golden Coast','West End',O,CV,'Business Square',G],duration:24,head:12,always:true},
+{id:'Pink',mode:'Metro',color:'#ff96d5',stops:['Walker Road Metro',CV,'Business Square',G,'Freedom Stadium'],duration:8,head:14},
+{id:'Purple',mode:'Metro',color:'#b68aff',stops:[G,'Post Street','University of Lucero','Dames Street',J,Z],duration:9,head:12},
+{id:'Green',mode:'Metro',color:'#61d995',stops:['Clifton','New Branswell Avenue - Arena','Cascades','Phoenix Heights',G,'Post Street','University of Lucero','Stadium Hall','Del Toro - Falmouth Square','Court House','Crossly Park - Camron Highway','Therman','Manassas','Manassas State'],duration:27,head:12,always:true},
+{id:'Red',mode:'Metro',color:'#f45d60',stops:['Golden Coast','West End',O,'8th Street - Park Avenue','Central Hospital','Bing Center - Cordan Street',G,'Montclair'],duration:11,head:10},
+{id:'Orange',mode:'Metro',color:'#ffad57',stops:['Manassas State','Manassas','Therman','Crossly Park - Camron Highway','Court House','Del Toro - Falmouth Square','Stadium Hall','8th Street - Park Avenue','Central Hospital','Bing Center - Cordan Street',G,'Montclair'],duration:18,head:12},
+{id:'Southside Shuttle',mode:'Metro',color:'#b2c8dd',stops:[G,'Southcity Crossing',B],duration:4,head:15,always:true},
+{id:'2',mode:'Metro',color:'#b2c8dd',stops:['Stadium Hall','Court Square','Westmore Avenue',J],duration:9,head:15},
+{id:'A',mode:'Light rail',color:'#66e7f0',stops:[O,CV,'East McNee','Southcity Crossing','Phoenix Heights'],duration:10,head:15},
+{id:'S',mode:'Light rail',color:'#66e7f0',stops:[O,'22nd Street','16th Street','Bing Center - Cordan Street',G],duration:12,head:12},
+{id:'P',mode:'Light rail',color:'#66e7f0',stops:['Montclair','Culbreth'],duration:2,head:15},
+{id:'C',mode:'Light rail',color:'#66e7f0',stops:['Court House','Westmore Avenue','West Zoo',Z,'Woodley Park','Willyum Street','Culbreth'],duration:21,head:15},
+{id:'D4',mode:'Bus',color:'#ff852e',stops:['Northern Lucero Community College','Franklin Square','East Campus Transit Center','University of Lucero (West Campus)','Freedom Stadium','Central Hospital'],duration:45,head:20},
+{id:'D6',mode:'Bus',color:'#ff852e',stops:[J,'Northern Lucero Community College','Franklin Square','East Campus Transit Center','University of Lucero (West Campus)',G],duration:42,head:20,always:true},
+{id:'S34',mode:'Bus',color:'#ff852e',stops:['New Branswell Avenue - Arena','Clifton','Aero Heights','Trintrilly Metro'],duration:38,head:30},
+{id:'C13',mode:'Bus',color:'#ff852e',stops:['Therman','Crossly Park - Camron Highway','Westmore Avenue','Del Toro - Falmouth Square','University of Lucero (West Campus)','Central Hospital',B],duration:61,head:15,always:true,new:true,via:'Newington Avenue'},
+{id:'C29',mode:'Bus',color:'#ff852e',stops:['Stadium Hall','Dames Street','North Lucero High School','Franklin Square','East Campus Transit Center','Culbreth'],duration:49,head:15,always:true,new:true,via:'Dames Street',shortTurn:'Franklin Square'},
+{id:'C29X',mode:'Bus',color:'#ff852e',stops:['8th Street - Park Avenue','Stadium Hall','Dames Street','Franklin Square','North Lucero High School','Culbreth','Eastern Market'],duration:57,head:20,new:true,via:'Limited Stop'},
+{id:'D12',mode:'Bus',color:'#ff852e',stops:[CV,'Business Square',G,'Montclair'],duration:35,head:30,new:true,via:'18th Street'},
+{id:'U22',mode:'Bus',color:'#ff852e',stops:['Manassas State','Stadium Hall'],duration:54,head:20,new:true,via:'Rush Only'},
+{"id":"D2","mode":"Bus","color":"#ff852e","stops":["Government Center Bay B", "Main Street & Lucero Highway", "27th Street & Post Street", "27th Street & Newington Avenue", "27th Street & Cordan Street", "Park Avenue & 27th Street", "Park Avenue & 8th Street", "Park Avenue & 13th Street", "Park Avenue & Walker Road", "Walker Road & Old Town Road", "Old Town Road & 8th Street", "Old Town Road & Cordan Street", "Old Town Road & Newington Avenue", "Old Town Road & Post Street", "Old Town Road & Lucero Highway", "Old Town Road & 2nd Street", "Rocky Street & Crowder Street", "Rocky Street & Ruth Street", "Rocky Street & Monroe Street", "Montclair Metro", "Montclair Avenue & Clark Street", "Montclair Avenue & Belle Street", "Eastern Avenue & North Street", "Eastern Avenue & Yves Park", "Southern Avenue & Eastern Avenue", "400 Southern Avenue", "100 Southern Avenue", "2nd Street & Lucero Highway"],"duration":45,"head":15,"always":true,"via":"Downtown circulator"},
+{"id":"U21","mode":"Bus","color":"#ff852e","stops":["Bing Center - Cordan Street","Cordan Street & 27th Street","Cordan Street & 4th Street","Central Hospital","Cordan Street & Old Town Road","Cordan Street & Newington Avenue","Cordan Street & Post Street","Cordan Street & Lucero Highway","Westmore Avenue"],"duration":48,"head":20,"always":false},
+{"id":"S33","mode":"Bus","color":"#ff852e","stops":["C Street - Ox Town","West End","South Lucero Transit Center","Golden Coast Mall","Southern Park","Orvard University","Trintrilly Metro"],"duration":55,"head":20,"always":false,"via":"28th Street"},
+{"id":"D18","mode":"Bus","color":"#ff852e","stops":["South Lucero Transit Center","West End","C Street - Ox Town","Ox Town","8th Street - Park Avenue","Stadium Hall","Del Toro - Falmouth Square","Northern Lucero Community College","Joseph Square - NLCC - Law Center"],"duration":62,"head":20,"always":false},
+{"id":"D20","mode":"Bus","color":"#ff852e","stops":["South Lucero Transit Center","West End","C Street - Ox Town","Ox Town","8th Street - Park Avenue","University of Lucero","East Campus Transit Center","Franklin Square","Joseph Square - NLCC - Law Center"],"duration":64,"head":20,"always":false,"via":"Downtown"},
+{"id":"D14","mode":"Bus","color":"#ff852e","stops":["Walker Road Metro","C Street - Ox Town","22nd Street","Lucero Convention Center - McNee","East McNee","Southcity Crossing","Phoenix Heights","Government Center","Montclair"],"duration":54,"head":20,"always":false},
+{"id":"D16","mode":"Bus","color":"#ff852e","stops":["Government Center","Phoenix Heights","Phoenix High School","Bancroft - Southside","Cascades"],"duration":43,"head":15,"always":false},
+{"id":"D16X","mode":"Bus","color":"#ff852e","stops":["Government Center","Phoenix Heights","Phoenix High School","Bancroft - Southside","Cascades","Cascades Southern Hospital"],"duration":46,"head":20,"always":false,"via":"Limited Stop"},
+{"id":"C7","mode":"Bus","color":"#ff852e","stops":["Stadium Hall","Del Toro - Falmouth Square","Northern Lucero Community College","Joseph Square - NLCC - Law Center","North Lucero High School","Culbreth"],"duration":56,"head":15,"always":false,"via":"Walker Mill Road"},
+{"id":"C9","mode":"Bus","color":"#ff852e","stops":["Stadium Hall","Franklin Square","East Campus Transit Center","Freedom Stadium","University of Lucero"],"duration":49,"head":20,"always":false,"via":"Richard Avenue"}
+,{id:'X2',mode:'Bus',color:'#ff852e',stops:['Government Center','2nd Street & Lucero Highway','100 Southern Avenue','400 Southern Avenue','Southern Avenue & Eastern Avenue','Nick Street','Lucero International Airport'],duration:33,head:20,always:true,via:'Airport Express',new:true}
+,{id:'X3',mode:'Bus',color:'#ff852e',stops:['Drybury Government Center','Drybury Metro','Loves Travel Center & Dansom Drive','22nd Street','Bing Center - Cordan Street','Government Center'],duration:44,head:30,always:true,via:'Drybury Express',new:true}
+,{id:'X7',mode:'Bus',color:'#ff852e',stops:['Manassas State','Littlewood Airport AirTrain Long-Term Parking','Littlewood Short-Term Parking','Littlewood National Airport'],duration:39,head:30,always:true,new:true}
+,{id:'U20',mode:'Bus',color:'#ff852e',stops:['Government Center','University of Lucero','Del Toro - Falmouth Square','Court Square','Court House','Crossly Park','Therman'],duration:32,head:25,new:true,via:'Provisional landmarks — stops pending'}
+,{id:'D8',mode:'Bus',color:'#ff852e',stops:['Southcity Crossing','Business Square','Bing Center - Cordan Street','Central Hospital','Government Center','2nd Street & Lucero Highway','100 Southern Avenue','400 Southern Avenue','Southern Avenue & Eastern Avenue','DHQ'],duration:46,head:35,new:true,via:'Provisional landmarks — stops pending'}
+,{id:'D10',mode:'Bus',color:'#ff852e',stops:['University of Lucero','Freedom Stadium','East Campus Transit Center','Franklin Square'],duration:22,head:30,new:true,via:'North Campus · Walker Mill Road · Dames Street · provisional stops'}
+,{id:'Yellow Shuttle',mode:'Bus',color:'#f9d76e',stops:['Gage Gehris - Young University','Castle Rock','Golden Coast','West End','C Street - Ox Town','22nd Street','Lucero Convention Center - McNee','Business Square','Government Center','Montclair'],duration:45,head:20,new:false,via:'Yellow Line Replacement Shuttle'}
+
+];
+
+// V16: launch timestamp must be set to the actual public deployment time (Lucero local offset).
+const V16_LAUNCH_AT = '2026-10-17T00:00:00-04:00'; // C29X transition start; adjust if actual v16 public launch was different
+function v16DaysSinceLaunch(){return V16_LAUNCH_AT ? (Date.now()-new Date(V16_LAUNCH_AT).getTime())/86400000 : null;}
+const CITYBUS_V16=[
+ ['30','#F5C518',['South Lucero Transit Center','West End','C Street - Ox Town','8th Street - Park Avenue','Central Hospital','Old Town Crossing','Government Center','East Lucero','Fordham - East Station'],48,10,12,15],
+ ['31','#F5C518',['Central Hospital','Old Town Crossing','Government Center','Montclair','Toriyama Village','North Saint Owen','Point Pleasant','Adyn','Glenarden'],38,10,12,15],
+ ['34','#F5C518',['Orvard University','Southern Park','South Lucero Transit Center','West End','Central Hospital','Bing Center - Cordan Street','Business Square','Phoenix Heights','East Complex','Saint Owen South','Concert Hall','Burdett'],50,12,15,20],
+ ['35','#F5C518',['Stadium Hall','Dames Street','Franklin Square','North Lucero High School','Culbreth','Eastern Market','Walker Mill Road','Glenarden'],50,10,12,15],
+ ['40','#F5C518',['Clifton','New Branswell Avenue - Arena','Cascades','Bancroft - Southside','Phoenix Heights','Government Center','Old Town Road & Lucero Highway','Franklin Square','Winnipeg Avenue - Zoo','West Pschigoda','Pschigoda'],62,10,12,15],
+ ['41','#F5C518',['Roswell','East Complex','Phoenix Heights','Government Center','Westmore Avenue','Crossly Park','Therman','Springfield - Fairfax Hospital','Springfield'],55,12,15,20],
+ ['42','#F5C518',['Manassas State','Manassas','Therman','Crossly Park - Camron Highway','Westmore Avenue','Del Toro - Falmouth Square','University of Lucero (West Campus)','Central Hospital','Bancroft - Southside','New Branswell Avenue - Arena','Clifton','Southport'],60,10,12,15]
+];
+// Route 42 includes all actual Green Line stations between Manassas State and Therman if present in source network.
+const greenV16=L.find(l=>l.id==='Green');
+if(greenV16){const a=greenV16.stops.findIndex(x=>x.includes('Manassas State')),b=greenV16.stops.findIndex(x=>x==='Therman');if(a>=0&&b>=0){const seq=greenV16.stops.slice(Math.min(a,b),Math.max(a,b)+1);if(a>b)seq.reverse();CITYBUS_V16[6][2].splice(0,3,...seq);}}
+CITYBUS_V16.forEach(([id,color,stops,duration,pk,off,night])=>L.push({id,mode:'CITYBUS',color,stops,duration,head:off,always:true,v16:{pk,off,night,provisional:true}}));
+const COMMUTER_V16=[
+ ['807',['Rustad Station','Pschigoda','Joseph Square','Government Center'],105,45],
+ ['808',['Government Center','Fordham - East Station','Glenarden','Rustad Station'],90,90],
+ ['810',['Government Center','Fordham - East Station','Muzan','Burtonsville','Prince George'],78,30]
+];
+COMMUTER_V16.forEach(([id,stops,duration,head])=>L.push({id,mode:'Commuter',color:'#55BCEB',stops,duration,head,always:false,v16:{commuter:true}}));
+for(const id of ['X3','D8','U20','D10','X2']){const r=L.find(l=>l.id===id);if(r)delete r.via;}
+
+const BUS_EXPRESS={
+ X2:[['Government Center Bay B','2nd Street & Lucero Highway','100 Southern Avenue','400 Southern Avenue','Southern Avenue & Eastern Avenue','Nick Street','Lucero International Airport'],['Lucero International Airport','Government Center Bay B']],
+ X3:[['Drybury Government Center','Drybury Metro','Loves Travel Center & Dansom Drive','22nd Street','Bing Center - Cordan Street','Government Center Bay E'],['Government Center Bay E','Bing Center - Cordan Street','22nd Street','Loves Travel Center & Dansom Drive','Drybury Metro','Drybury Government Center']],
+ X7:[['Manassas State Metro','Littlewood Airport AirTrain Long-Term Parking','Littlewood Short-Term Parking','Littlewood National Airport'],['Littlewood National Airport','Littlewood Short-Term Parking','Littlewood Airport AirTrain Long-Term Parking','Manassas State Metro']]
+};
+const BUS_V11={"D2":[["Government Center Bay B", "Main Street & Lucero Highway", "27th Street & Post Street", "27th Street & Newington Avenue", "27th Street & Cordan Street", "Park Avenue & 27th Street", "Park Avenue & 8th Street", "Park Avenue & 13th Street", "Park Avenue & Walker Road", "Walker Road & Old Town Road", "Old Town Road & 8th Street", "Old Town Road & Cordan Street", "Old Town Road & Newington Avenue", "Old Town Road & Post Street", "Old Town Road & Lucero Highway", "Old Town Road & 2nd Street", "Rocky Street & Crowder Street", "Rocky Street & Ruth Street", "Rocky Street & Monroe Street", "Montclair Metro", "Montclair Avenue & Clark Street", "Montclair Avenue & Belle Street", "Eastern Avenue & North Street", "Eastern Avenue & Yves Park", "Southern Avenue & Eastern Avenue", "400 Southern Avenue", "100 Southern Avenue", "2nd Street & Lucero Highway", "Government Center Bay B"], ["Government Center Bay B", "2nd Street & Lucero Highway", "100 Southern Avenue", "400 Southern Avenue", "Southern Avenue & Eastern Avenue", "Eastern Avenue & Yves Park", "Eastern Avenue & North Street", "Montclair Avenue & Belle Street", "Montclair Avenue & Clark Street", "Montclair Metro", "Rocky Street & Monroe Street", "Rocky Street & Ruth Street", "Rocky Street & Crowder Street", "Old Town Road & 2nd Street", "Old Town Road & Lucero Highway", "Old Town Road & Post Street", "Old Town Road & Newington Avenue", "Old Town Road & Cordan Street", "Old Town Road & 8th Street", "Walker Road & Old Town Road", "Park Avenue & Walker Road", "Park Avenue & 13th Street", "Park Avenue & 8th Street", "Park Avenue & 27th Street", "27th Street & Cordan Street", "27th Street & Newington Avenue", "27th Street & Post Street", "Main Street & Lucero Highway", "Government Center Bay B"]],"U21":[["Bing Center - Cordan Street","Cordan Street & 27th Street","Cordan Street & 4th Street","Central Hospital","Cordan Street & Old Town Road","Cordan Street & Newington Avenue","Cordan Street & Post Street","Cordan Street & Lucero Highway","Westmore Avenue"],["Westmore Avenue","Cordan Street & Lucero Highway","Cordan Street & Post Street","Cordan Street & Newington Avenue","Cordan Street & Old Town Road","Central Hospital","Cordan Street & 4th Street","Cordan Street & 27th Street","Bing Center - Cordan Street"]],"S33":[["C Street - Ox Town","West End","South Lucero Transit Center","Golden Coast Mall","Southern Park","Orvard University","Trintrilly Metro"],["Trintrilly Metro","Orvard University","Southern Park","Golden Coast Mall","South Lucero Transit Center","West End","C Street - Ox Town"]],"D18":[["South Lucero Transit Center","West End","C Street - Ox Town","Ox Town","8th Street - Park Avenue","Stadium Hall","Del Toro - Falmouth Square","Northern Lucero Community College","Joseph Square - NLCC - Law Center"],["Joseph Square - NLCC - Law Center","Northern Lucero Community College","Del Toro - Falmouth Square","Stadium Hall","8th Street - Park Avenue","Ox Town","C Street - Ox Town","West End","South Lucero Transit Center"]],"D20":[["South Lucero Transit Center","West End","C Street - Ox Town","Ox Town","8th Street - Park Avenue","University of Lucero","East Campus Transit Center","Franklin Square","Joseph Square - NLCC - Law Center"],["Joseph Square - NLCC - Law Center","Franklin Square","East Campus Transit Center","University of Lucero","8th Street - Park Avenue","Ox Town","C Street - Ox Town","West End","South Lucero Transit Center"]],"D14":[["Walker Road Metro","C Street - Ox Town","22nd Street","Lucero Convention Center - McNee","East McNee","Southcity Crossing","Phoenix Heights","Government Center","Montclair"],["Montclair","Government Center","Phoenix Heights","Southcity Crossing","East McNee","Lucero Convention Center - McNee","22nd Street","C Street - Ox Town","Walker Road Metro"]],"D16":[["Government Center","Phoenix Heights","Phoenix High School","Bancroft - Southside","Cascades"],["Cascades","Bancroft - Southside","Phoenix High School","Phoenix Heights","Government Center"]],"D16X":[["Government Center","Phoenix Heights","Phoenix High School","Bancroft - Southside","Cascades","Cascades Southern Hospital"],["Cascades Southern Hospital","Cascades","Bancroft - Southside","Phoenix High School","Phoenix Heights","Government Center"]],"C7":[["Stadium Hall","Del Toro - Falmouth Square","Northern Lucero Community College","Joseph Square - NLCC - Law Center","North Lucero High School","Culbreth"],["Culbreth","North Lucero High School","Joseph Square - NLCC - Law Center","Northern Lucero Community College","Del Toro - Falmouth Square","Stadium Hall"]],"C9":[["Stadium Hall","Franklin Square","East Campus Transit Center","Freedom Stadium","University of Lucero"],["University of Lucero","Freedom Stadium","East Campus Transit Center","Franklin Square","Stadium Hall"]]};
+const BUS_V10={"C29":[["Stadium Hall Bay D","Bucks Arena","Stadium Tower","Richard Court & Dames Street","Dames Street & Corterra Avenue","Dames Street & Gordon Street","Dames Street & Newington Avenue","Dames Street Metro","Dames Street & Yukon Street","Dames Street & Melbourne Street","Dames Street & Warehouse Boulevard","Dames Street & Franklin Street","Dames Street & N 33rd Street (Franklin Square)","Dames Street & S 33rd Street","Dames Street & Winnipeg Avenue","Dames Street & Walker Mill Road","Walker Mill Road & University Street","North Lucero Highschool","Jungle Base Road & Willyum Street","200 Jungle Base Road","Jungle Base Road & Transportation Street","Culbreth Station Bay A"],["Culbreth Station Bay A","Jungle Base Road & Transportation Street","200 Jungle Base Road","Jungle Base Road & Willyum Street","North Lucero Highschool","Walker Mill Road & University Street","Dames Street & Walker Mill Road","Dames Street & Winnipeg Avenue","Dames Street & S 33rd Street","Dames Street & N 33rd Street (Franklin Square)","Dames Street & Franklin Street","Dames Street & Warehouse Boulevard","Dames Street & Melbourne Street","Dames Street & Yukon Street","Dames Street Metro","Dames Street & Newington Avenue","Dames Street & Gordon Street","Dames Street & Corterra Avenue","Richard Court & Dames Street","Stadium Tower","Stadium Hall (2 Train)","Stadium Hall Bay D"]],"C29X":[["8th Street - Park Avenue Metro","Walker Road & 8th Street","Walker Road & 10th Street","Stadium Hall Bay K","Bucks Arena","Richard Court & Dames Street","Dames Street & Newington Avenue","Dames Street Metro","Dames Street & Warehouse Boulevard","Dames Street & N 33rd Street (Franklin Square)","Dames Street & Walker Mill Road","Walker Mill Road & University Street","North Lucero Highschool","Jungle Base Road & Willyum Street","Culbreth Station Bay A","Eastern Market"],["Eastern Market","Culbreth Station Bay A","Jungle Base Road & Willyum Street","North Lucero Highschool","Walker Mill Road & University Street","Dames Street & Walker Mill Road","Dames Street & N 33rd Street (Franklin Square)","Dames Street & Warehouse Boulevard","Dames Street Metro","Dames Street & Newington Avenue","Dames Street & Gordon Street","Richard Court & Dames Street","Stadium Hall (2 Train)","Stadium Hall Bay D","Walker Road & 10th Street","Walker Road & 8th Street","8th Street - Park Avenue Metro"]],"S34":[["New Branswell Avenue Metro Bay A","New Branswell Avenue & New Lucero Avenue","New Lucero Avenue & Cherry Avenue","First National Bank Arena East Entrance","Cherry Avenue & Arena Street","Cherry Avenue & Clifton Avenue","Cherry Avenue & Defense Highway","Defense Highway & Blossom Street","Defense Highway & New Branswell Avenue (Clifton Metro West)","New Branswell Avenue & Valley Pike (Clifton Metro East)","New Branswell Avenue & Colby Road","Colby Road & Pschigoda Highway","Colby Road & Clark Meadow Apartments","600 Colby Road","700 Colby Road","Colby Road & Airfield Road","Airfield Road Metro Station A","Trintrilly Regional Airfield","Airfield Road & Cowan Road","Trintrilly Metro Station Bay A"],["Trintrilly Metro Station Bay A","Airfield Road & Cowan Road","Trintrilly Regional Airfield","Airfield Road Metro Station A","Colby Road & Airfield Road","700 Colby Road","600 Colby Road","Colby Road & Clark Meadow Apartments","Colby Road & Pschigoda Highway","New Branswell Avenue & Colby Road","New Branswell Avenue & Valley Pike (Clifton Metro East)","Defense Highway & New Branswell Avenue (Clifton Metro West)","Defense Highway & Blossom Street","Cherry Avenue & Defense Highway","Cherry Avenue & Clifton Avenue","Cherry Avenue & Arena Street","First National Bank Arena East Entrance","New Lucero Avenue & Cherry Avenue","New Branswell Avenue & New Lucero Avenue","New Branswell Avenue Metro Bay A"]]};
+const $=id=>document.getElementById(id);
+const select=$('station');
+const MAJOR_HUBS=['Franklin Square','South Lucero Transit Center','East Campus Transit Center','Northern Lucero Community College','Golden Coast Mall','Cascades Southern Hospital'];
+const RAIL_STATIONS=L.filter(l=>l.mode==='Metro').flatMap(l=>l.stops);
+// Your Metro lists Metro stations exclusively; light rail interchange stops remain if they are Metro stations too.
+for(const s of [...new Set(RAIL_STATIONS)].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'})))select.add(new Option(s==='Walker Road Metro'?'Walker Road':s,s));
+const aliases={'Joseph Square':J,'Walker Road':'Walker Road Metro','Bancroft–Southside':B,'C Street–Ox Town':O,'Winnipeg Avenue–Zoo':Z,'New Branswell Avenue Metro':'New Branswell Avenue - Arena','Trintrilly':'Trintrilly Metro','Young University':'Gage Gehris - Young University'};
+const saved=new URLSearchParams(location.search).get('station')||localStorage.getItem('lucero-station')||J;
+const canonicalSaved=saved==='21st Street'?'22nd Street':(aliases[saved]||saved);
+select.value=[...select.options].some(o=>o.value===canonicalSaved)?canonicalSaved:J;
+select.onchange=()=>{localStorage.setItem('lucero-station',select.value);history.replaceState(null,'','?station='+encodeURIComponent(select.value));directions={};render();};
+function clockNow(){
+ const d=new Date(),fmt=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+ const p=Object.fromEntries(fmt.formatToParts(d).map(x=>[x.type,x.value]));
+ return {min:+p.hour*60+(+p.minute)+(+p.second)/60,weekday:p.weekday,date:p.year+'-'+p.month+'-'+p.day,clock:new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',second:'2-digit'}).format(d)};
+}
+const peak=t=>(t>=420&&t<600)||(t>=960&&t<1140);
+const weekdayPeak=t=>(t>=360&&t<540)||(t>=900&&t<1140);
+function frequency(l,t){
+ if(l.v16?.pk){const day=clockNow().weekday,wd=day!=='Sat'&&day!=='Sun';return t<300||t>=1380?l.v16.night:wd&&((t>=360&&t<540)||(t>=900&&t<1140))?l.v16.pk:l.v16.off;}
+ if(l.id==='807')return 45;
+ if(l.id==='808')return ['Sat','Sun'].includes(clockNow().weekday)?120:((t>=360&&t<540)||(t>=900&&t<1140))?60:90;
+ if(l.id==='810')return 30;
+ if(l.id==='X2')return 20;
+ if(l.id==='X3')return t>=420&&t<1260?30:60;
+ if(l.id==='X7')return t>=300&&t<1260?30:60;
+ if(l.id==='U20')return !['Sat','Sun'].includes(clockNow().weekday)&&weekdayPeak(t)?20:25;
+ if(l.id==='D8')return weekdayPeak(t)?30:35;
+ if(l.id==='D10')return 30;
+ if(l.id==='Yellow Shuttle')return 20;
+ if(l.id==='D2')return t<270||t>=1410?20:peak(t)?12:15;
+ if(l.id==='U21')return peak(t)?20:60;
+ if(l.id==='S33')return peak(t)?15:20;
+ if(l.id==='D18')return 20;
+ if(l.id==='D20')return peak(t)?15:20;
+ if(l.id==='D14')return peak(t)?20:30;
+ if(l.id==='D16')return 15;
+ if(l.id==='D16X')return peak(t)?20:25;
+ if(l.id==='C7')return t>=1320||t<240?25:peak(t)?15:20;
+ if(l.id==='C9')return peak(t)?20:45;
+ if(l.id==='P')return 6;
+ if(l.id==='Southside Shuttle')return t<270||t>=1380?15:peak(t)?8:10;
+ if(l.id==='Yellow'&&clockNow().date>='2026-10-16'&&clockNow().date<='2026-10-18')return 15;
+ if(['Yellow','Green'].includes(l.id))return t<270||t>=1380?15:peak(t)?10:12;
+ if(l.id==='Orange')return peak(t)?10:12;
+ if(['Pink','2','Red','Purple','C','A','S'].includes(l.id))return peak(t)?12:15;
+ if(l.id==='C29X')return 20;
+ if(['C13','C29'].includes(l.id))return t<270||t>=1410?20:peak(t)?10:15;
+ if(l.id==='D6')return t<270?25:(t<370||t>=1335)?20:peak(t)?15:20;
+ if(l.id==='D4')return peak(t)?15:20;
+ if(l.id==='S34')return peak(t)?20:30;
+ if(l.id==='D12')return peak(t)?20:30;
+ return l.always&&t<270?Math.max(l.head,20):l.head;
+}
+const BUS_STOPS={"D4": [["Central Hospital Metro Bay A", "Newington Avenue & Old Town Road", "Old Town Road & Old Town Xing", "Old Town Road & Lucero Highway", "Lucero Highway Ramp & University Street", "Freedom Stadium Metro", "Jonas Hall & University Street", "University Street & S 33rd Street", "East Campus Transit Center", "S 33rd Street & Dames Street (Franklin Square)", "N 33rd Street", "N 33rd Street & Walker Mill Road", "Walker Mill Road & Franklin Street", "Madison Street", "Northern Lucero Community College"], ["Northern Lucero Community College", "Madison Street", "Walker Mill Road & Franklin Street", "N 33rd Street & Walker Mill Road", "N 33rd Street & Parker Street", "Dames Street & S 33rd Street (Franklin Square)", "East Campus Transit Center", "University Street & S 33rd Street", "Jonas Hall & University Street", "Freedom Stadium Metro", "Lucero Highway & Cordan Street", "Old Town Road & Lucero Highway", "Newington Avenue & Old Town Road", "Cordan Street & Old Town Road", "Central Hospital Metro Bay A"]], "D6": [["Government Center Bay A", "Old Town Road & 2nd Street", "Old Town Road & Lucero Highway", "Lucero Highway Ramp & University Street", "Freedom Stadium Metro", "Jonas Hall & University Street", "University Street & S 33rd Street", "East Campus Transit Center", "S 33rd Street & Dames Street (Franklin Square)", "N 33rd Street", "N 33rd Street & Walker Mill Road", "Franklin Street & Conway Street", "Joseph Square Metro Station (East)", "West Maddox Road & 7 Avenue", "Joseph Square Metro Station (West)"], ["Joseph Square Metro Station (West)", "East Maddox Road & Madison Street", "Franklin Street & Conway Street", "N 33rd Street & Walker Mill Road", "N 33rd Street & Parker Street", "Dames Street & S 33rd Street (Franklin Square)", "East Campus Transit Center", "University Street & S 33rd Street", "Jonas Hall & University Street", "Freedom Stadium Metro", "Lucero Highway & Cordan Street", "Old Town Road & Lucero Highway", "Old Town Road & 2nd Street", "Government Center Bay A"]]};
+
+const BUS_NIGHT={"D6": [["Central Hospital Metro Bay A", "Newington Avenue & Old Town Road", "Cordan Street & Old Town Road", "Cordan Street & 4th Street", "27th Street & Newington Avenue", "27th Street & Post Street", "27th Street & Lucero Highway", "Government Center Bay A", "Old Town Road & 2nd Street", "Old Town Road & Lucero Highway", "Lucero Highway Ramp & University Street", "Freedom Stadium Metro", "Jonas Hall & University Street", "University Street & S 33rd Street", "East Campus Transit Center", "S 33rd Street & Dames Street (Franklin Square)", "N 33rd Street", "N 33rd Street & Walker Mill Road", "Franklin Street & Conway Street", "Joseph Square Metro Station (East)", "West Maddox Road & 7 Avenue", "Joseph Square Metro Station (West)"], ["Joseph Square Metro Station (West)", "East Maddox Road & Madison Street", "Franklin Street & Conway Street", "N 33rd Street & Walker Mill Road", "N 33rd Street & Parker Street", "Dames Street & S 33rd Street (Franklin Square)", "East Campus Transit Center", "University Street & S 33rd Street", "Jonas Hall & University Street", "Freedom Stadium Metro", "Lucero Highway & Cordan Street", "Old Town Road & Lucero Highway", "Old Town Road & 2nd Street", "Government Center Bay A", "27th Street & Lucero Highway", "27th Street & Post Street", "27th Street & Newington Avenue", "27th Street & Cordan Street", "Cordan Street & 4th Street", "Central Hospital Metro Bay A"]]};
+function routeStops(l,t,dir){
+ if(l.id==='810'&&dir===1)return [...l.stops].reverse();
+
+ if(BUS_EXPRESS[l.id])return BUS_EXPRESS[l.id][dir??0];
+ if(BUS_V11[l.id])return BUS_V11[l.id][dir??0];
+ if(BUS_V10[l.id])return BUS_V10[l.id][dir??0];
+ if(BUS_STOPS[l.id]){
+  const night=l.id==='D6'&&(t<380||t>=1315);
+  return (night?BUS_NIGHT.D6:BUS_STOPS[l.id])[dir??0];
+ }
+
+ if(l.id==='Yellow'&&t<270)return [...l.stops,'Montclair'];
+ // D6 extends south to Central Hospital when D4 is no longer operating.
+ // D4's published windows vary by direction; use its corresponding terminal cutoff.
+ if(l.id==='D6'&&(t<380||t>=1315))return [...l.stops,'Central Hospital'];
+ return l.stops;
+}
+function serviceWindow(l,day,dir){
+ if(l.id==='C29X'){const days=v16DaysSinceLaunch();if(days!==null&&days>=14)return null;}
+ if(l.mode==='CITYBUS')return [0,1440];
+ if(l.mode==='Commuter'){
+  const weekend=['Sat','Sun'].includes(day.weekday);
+  if(l.id==='807')return weekend?null:dir===0?[300,540]:[900,1140];
+  if(l.id==='810')return weekend?null:dir===0?[875,1171]:[270,526];
+  if(l.id==='808')return weekend?[480,1261]:[330,1291];
+ }
+
+ // New bus routes are activated immediately; Yellow Line branch remains dated.
+ if(['D8','D10'].includes(l.id)&&['Sat','Sun'].includes(day.weekday))return null;
+ if(l.id==='Yellow Shuttle'){
+  if(day.date==='2026-10-17'||day.date==='2026-10-18'||day.date==='2026-10-19')return [0,300];
+  if(day.date==='2026-10-16'||day.date==='2026-10-17'||day.date==='2026-10-18')return [1380,1440];
+  return null;
+ }
+ if(l.id==='X2'||l.id==='X3'||l.id==='X7')return [0,1440];
+ if(l.id==='U20')return [325,1410];
+ if(l.id==='D8')return dir===0?[270,1230]:[330,1290];
+ if(l.id==='D10')return [420,1260];
+ if(['Red','Pink'].includes(l.id)&&day.date>='2026-10-16'&&day.date<='2026-10-18')return null;
+ if(l.id==='Yellow'&&day.date>='2026-10-16'&&day.date<='2026-10-18')return dir===0?[300,1380]:[300,1370];
+ const windows={
+  'U21':[[375,1260],[345,1290]],'S33':[[285,1420],[265,1435]],
+  'D18':[[330,1320],[345,1335]],'D20':[[325,1370],[335,1360]],
+  'D14':[[360,1260],[370,1275]],'D16':[[335,1435],[315,1415]],
+  'D16X':[[390,1335],[370,1350]],'C7':[[265,1460],[245,1450]],
+  'C9':[[360,1290],[385,1260]]};
+ if(l.id==='U21'&&(day.weekday==='Sat'||day.weekday==='Sun'))return null;
+ if(windows[l.id])return windows[l.id][dir];
+ if(l.id==='U22'){
+  if(day.weekday==='Sat'||day.weekday==='Sun')return null;
+  return dir===0?[300,570]:[900,1260];
+ }
+ if(l.id==='D12')return dir===0?[375,1275]:[355,1295];
+ if(l.id==='C29X')return [300,1440];
+ if(l.always)return [0,1440];
+ if(l.id==='D4')return dir===0?[380,1315]:[370,1335];
+ if(l.id==='S34')return dir===0?[350,1290]:[375,1265];
+ if(l.mode==='Light rail')return [330,(day.weekday==='Fri'||day.weekday==='Sat')?1440:1380];
+ return [270,1440];
+}
+function atShift(clock,shift){
+ // Dates/weekday need to change for overnight journeys and Monday activation.
+ const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+ const y=+clock.date.slice(0,4),m=+clock.date.slice(5,7),d=+clock.date.slice(8,10);
+ const date=new Date(Date.UTC(y,m-1,d+shift));
+ return {...clock,date:date.toISOString().slice(0,10),weekday:days[date.getUTCDay()]};
+}
+// v13: Deterministic shared incidents, persistent across refreshes and expiring each 45-minute window.
+const DISRUPTION_MS=45*60*1000;
+function incidentHash(str){let h=2166136261;for(let i=0;i<str.length;i++)h=Math.imul(h^str.charCodeAt(i),16777619);return h>>>0;}
+function corridorEdges(l){
+ const names=routeStops(l,clockNow().min,0);
+ const result=[];
+ for(let i=0;i<names.length-1;i++){
+  const pair=[stationForStop(names[i]),stationForStop(names[i+1])].sort().join(' ↔ ');
+  result.push(pair);
+ }
+ return result;
+}
+// v16.2.2: only currently operating services may have random incidents.
+// Planned track work and closure notices are handled separately from this generator.
+function operatingForRandomAlerts(l,clock=clockNow()){
+ return [0,1].some(dir=>{
+  const window=serviceWindow(l,clock,dir);
+  return window&&clock.min>=window[0]&&clock.min<window[1];
+ });
+}
+function validRandomIncident(x,clock=clockNow()){
+ if(!x||!Array.isArray(x.affected))return false;
+ const railOnly=['Signal Problem','Object Stuck on Rails','Switch Problems'];
+ x.affected=x.affected.filter(id=>{
+  const l=L.find(r=>r.id===id);
+  if(!l||l.mode!==x.mode||!operatingForRandomAlerts(l,clock))return false;
+  return (l.mode==='Metro'||l.mode==='Light rail')||!railOnly.includes(x.reason);
+ });
+ return x.affected.length>0;
+}
+function incidentState(){
+ const bucket=Math.floor(Date.now()/DISRUPTION_MS),key='lucero-v16-2-rush-incidents-'+bucket+'-'+(peak(clockNow().min)?'peak':'offpeak');
+ let data=null;try{data=JSON.parse(localStorage.getItem(key)||'null');}catch(e){}
+ if(!data||!Array.isArray(data.incidents)){
+  const railReasons=['Signal Problem','Object Stuck on Rails','Switch Problems','Mechanical Problems','Police Investigation'];
+  const busReasons=['Traffic','Mechanical Problems','Skipped Trip','Police Investigation'];
+  const edges=Object.fromEntries(L.map(l=>[l.id,corridorEdges(l)]));
+  const incidents=[];
+  // Approximately 5–10% of routes, not each direction, experience a disruption.
+  for(const l of L){
+   const h=incidentHash(bucket+'|'+l.id);
+   if(!operatingForRandomAlerts(l)||h%100>=7)continue;
+   const segment=edges[l.id][(h>>>9)%Math.max(1,edges[l.id].length)]||l.stops[0];
+   const related=L.filter(other=>other.mode===l.mode&&operatingForRandomAlerts(other)&&edges[other.id].includes(segment)).map(x=>x.id);
+   // A shared incident is one record for every route using the same segment.
+   if(incidents.some(x=>x.segment===segment&&x.mode===l.mode))continue;
+   const rush=peak(clockNow().min);
+   const pool=!['Metro','Light rail'].includes(l.mode)?busReasons:railReasons;
+   const reason=(h>>>16)%100===0?'Police Investigation':((h>>>19)%400===0?'Object Struck':(!['Metro','Light rail'].includes(l.mode)&&rush&&((h>>>15)%100)<70?'Traffic':pool[(h>>>15)%(pool.length-1)])); // Rare police incidents (~1% of disruptions).
+   const affected=related.length?related:[l.id];
+   incidents.push({id:'INC-'+bucket+'-'+incidents.length,segment,mode:l.mode,reason,affected,minutes:2+(h>>>20)%14,bothDirections:(h>>>6)%10!==0,oneDirection:(h>>>7)%2,skipIndex:(h>>>11)%7});
+  }
+  data={bucket,incidents};
+  try{localStorage.setItem(key,JSON.stringify(data));for(let i=2;i<=5;i++)localStorage.removeItem('lucero-v12-incidents-'+(bucket-i));}catch(e){}
+ }
+ // Recheck on every read: an incident must disappear once the route stops running,
+ // even if the cached 45-minute bucket is still current.
+ data.incidents=data.incidents.filter(x=>validRandomIncident(x));
+ return data;
+}
+function incidentsFor(id,dir){
+ const line=L.find(l=>l.id===id);if(!line)return [];
+ return incidentState().incidents.filter(x=>{
+  if(!operatingForRandomAlerts(line)||!x.affected.includes(id)||!(x.bothDirections||x.oneDirection===dir))return false;
+  // Ignore malformed/stale alerts and prevent rail incidents on buses, CITYBUS or commuters.
+  if(x.mode!==line.mode)return false;
+  const rail=line.mode==='Metro'||line.mode==='Light rail';
+  const railOnly=['Signal Problem','Object Stuck on Rails','Switch Problems']; // Police Investigation can affect rail or bus, but only on the route involved.
+  return rail||!railOnly.includes(x.reason);
+ });
+}
+function delayFor(id,dir,tripIndex=0){
+ const events=incidentsFor(id,dir);
+ if(!events.length)return null;
+ const event=events[0];
+ // A skipped bus trip applies to a single departure, not the entire route.
+ if(event.reason==='Skipped Trip'&&tripIndex%7!==event.skipIndex)return null;
+ return {...event,skipped:event.reason==='Skipped Trip',minutes:event.reason==='Skipped Trip'?0:Math.max(2,event.minutes-(tripIndex%3)*2)};
+}
+function disruptionPanel(l,dir,clock){
+ const section=makeEl('section','disruption-panel');
+ section.append(makeEl('h3','','Service alerts & affected trips'));
+ const events=incidentsFor(l.id,dir);
+ if(!events.length){section.append(makeEl('p','sheet-muted','No active simulated disruptions for this direction.'));return section;}
+ for(const event of events){
+  const wrap=makeEl('div','incident-card');
+  wrap.append(makeEl('strong','incident-heading','⚠ '+event.reason));
+  wrap.append(makeEl('p','sheet-muted','Location: '+event.segment));
+  wrap.append(makeEl('p','sheet-muted','Service disruption'));
+  wrap.append(makeEl('p','sheet-muted','Other affected services: '+(event.affected.filter(x=>x!==l.id).join(', ')||'None')));
+  wrap.append(makeEl('p','sheet-muted',event.reason==='Skipped Trip'?'An occasional scheduled bus trip will not operate.':'Typical additional travel time: '+event.minutes+' minutes.'));
+  const table=makeEl('div','affected-trips');
+  table.append(makeEl('strong','','Affected departures'));
+  // Show scheduled terminal departures in the upcoming two hours, both directions when relevant.
+  for(const d of (event.bothDirections?[0,1]:[dir])){
+   const range=serviceWindow(l,clock,d);if(!range)continue;
+   const [start,end]=range;let count=0;
+   for(let t=start,idx=0;t<end&&count<4;t+=frequency(l,t),idx++){
+    const absolute=t-clock.min;
+    if(absolute<0||absolute>120)continue;
+    const delay=delayFor(l.id,d,idx);
+    if(!delay)continue;
+    const row=makeEl('div','affected-trip');
+    row.append(makeEl('span','',directionName(l,d)+' · '+formatMin(t)));
+    row.append(makeEl('b','',delay.skipped?'TRIP SKIPPED':'+'+delay.minutes+' min'));
+    table.append(row);count++;
+   }
+  }
+  if(table.children.length===1)table.append(makeEl('p','sheet-muted','No affected departures in the next two hours.'));
+  wrap.append(table);section.append(wrap);
+ }
+ section.append(makeEl('p','sheet-muted','Simulated service conditions. Incidents expire automatically and may differ between browsers.'));
+ return section;
+}
+function departures(l,stop,dir,clock){
+ const arr=[];
+ for(let shift=-1;shift<=1;shift++){
+  const day=atShift(clock,shift),range=serviceWindow(l,day,dir);
+  if(!range)continue;
+  const [start,end]=range;
+  // Build departure times from terminal, with variable headways and fixed deterministic phase.
+  for(let t=start,tripIndex=0;t<end;tripIndex++){
+   if(l.id==='808'&&day.weekday!=='Sat'&&day.weekday!=='Sun'&&(((t>=360&&t<540)&&dir!==1)||((t>=900&&t<1140)&&dir!==0))){t+=frequency(l,t);continue;}
+   if(l.id==='810'&&dir===1&&tripIndex%2===1&&stop==='Burtonsville'){t+=frequency(l,t);continue;}
+
+   const names=(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,t,dir):(dir===0?routeStops(l,t):[...routeStops(l,t)].reverse());
+   const idx=names.indexOf(stop);
+   if(idx>=0&&idx<names.length-1){
+    const travel=(l.id==='X2'&&dir===1?31:l.id==='D6'?(t<380||t>=1315?(dir===0?30:27):22):l.id==='D4'?25:l.duration)+(l.id==='Yellow'&&t<270?12:0)+(l.id==='D6'&&names.includes('Central Hospital Metro Bay A')?9:0);
+    const stopOffset=travel*idx/(names.length-1);
+    const disruption=shift===0?delayFor(l.id,dir,tripIndex):null;
+    const eta=shift*1440+t+stopOffset-clock.min+(disruption?.minutes||0);
+    if(eta>=-.5&&eta<=110){
+     if(disruption?.skipped){t+=frequency(l,t);continue;}
+     const h=frequency(l,t);
+     arr.push({eta:Math.max(0,Math.ceil(eta)),dest:names.at(-1),last:!l.always&&t+h>=end,dir,short:false,delay:disruption});
+     // Some C29 buses turn at Franklin Square in peak periods, so no eastbound
+     // arrival at stops beyond Franklin Square for alternating peak departures.
+     if(l.id==='C29'&&dir===0&&peak(t)&&Math.round((t-start)/h)%2===1&&idx>names.indexOf('Dames Street & N 33rd Street (Franklin Square)'))arr.pop();
+     else if(l.id==='C29'&&dir===0&&peak(t)&&Math.round((t-start)/h)%2===1){arr.at(-1).dest='Dames Street & N 33rd Street (Franklin Square)';arr.at(-1).short=true;}
+    }
+   }
+   t+=frequency(l,t);
+  }
+ }
+ if(l.id==='Yellow'&&clock.date>=START_NEW&&dir===1){arr.forEach((a,i)=>{if(i%2===1)a.dest='Drybury';});}
+ arr.forEach(a=>{if(a.dest==='South Lucero Transit Center')a.dest='South Lucero';if(a.dest==='Rustad Station')a.dest='Rustad';});
+ return arr.sort((a,b)=>a.eta-b.eta).slice(0,4);
+}
+const axes={X2:'NS',X3:'EW',X7:'NS',U20:'NS',D8:'EW',D10:'NS','Yellow Shuttle':'EW',D2:'EW',U21:'NS',S33:'SN',D18:'EW',D20:'EW',D14:'EW',D16:'SN',D16X:'SN',C7:'EW',C9:'EW',C29X:'EW',Yellow:'EW',Pink:'NS',Purple:'NS',Green:'NS',Red:'EW',Orange:'EW','Southside Shuttle':'SN','2':'EW',A:'EW',S:'EW',P:'NS',C:'EW',D4:'NS',D6:'NS',S34:'SN',C13:'SN',C29:'EW',D12:'EW',U22:'SN',40:'SN',41:'SN',42:'NS'};
+function directionName(l,dir){if(l.id==='D2')return dir===0?'Clockwise':'Counterclockwise';const pair=axes[l.id]||'WE';const names={N:'Northbound',S:'Southbound',E:'Eastbound',W:'Westbound'};return names[pair[dir]];}
+function stopOptions(l,station,t=clockNow().min){
+ if(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id]){
+  const aliases={
+   'Central Hospital':['Central Hospital Metro Bay A'],
+   'Freedom Stadium':['Freedom Stadium Metro'],
+   'Government Center':['Government Center Bay A','Government Center Bay B','Government Center Bay E'],
+   'Joseph Square - NLCC - Law Center':['Joseph Square Metro Station (East)','Joseph Square Metro Station (West)'],
+   'Northern Lucero Community College':['Northern Lucero Community College'],
+   'East Campus Transit Center':['East Campus Transit Center'],
+   'Stadium Hall':['Stadium Hall Bay D','Stadium Hall Bay K','Stadium Hall (2 Train)'],
+   'Culbreth':['Culbreth Station Bay A'],
+   'Dames Street':['Dames Street Metro'],
+   'Franklin Square':['S 33rd Street & Dames Street (Franklin Square)','Dames Street & S 33rd Street (Franklin Square)','Dames Street & N 33rd Street (Franklin Square)'],
+   'North Lucero High School':['North Lucero Highschool'],
+   '8th Street - Park Avenue':['8th Street - Park Avenue Metro'],
+   'New Branswell Avenue - Arena':['New Branswell Avenue Metro Bay A'],
+   'Clifton':['Defense Highway & New Branswell Avenue (Clifton Metro West)','New Branswell Avenue & Valley Pike (Clifton Metro East)'],
+   'Manassas State':['Manassas State Metro'],
+   'Trintrilly Metro':['Trintrilly Metro Station Bay A'],
+   'Westmore Avenue':['Westmore Avenue'],
+   'South Lucero Transit Center':['South Lucero Transit Center'],
+   'Bancroft - Southside':['Bancroft - Southside'],
+   'Cascades':['Cascades'],
+   'Culbreth':['Culbreth','Culbreth Station Bay A'],
+   'Joseph Square - NLCC - Law Center':['Joseph Square - NLCC - Law Center','Joseph Square Metro Station (East)','Joseph Square Metro Station (West)'],
+   'Del Toro - Falmouth Square':['Del Toro - Falmouth Square','Stadium Hall'],
+   'Dames Street':['Dames Street','Stadium Hall'],
+   'Central Hospital':['Central Hospital Metro Bay A'],
+   'Freedom Stadium':['Freedom Stadium','8th Street - Park Avenue']
+  };
+  const valid=new Set([...routeStops(l,t,0),...routeStops(l,t,1)]);
+  const nearbyV11=(l.id==='C9'&&['Del Toro - Falmouth Square','Dames Street'].includes(station))?['Stadium Hall']:
+    (l.id==='D2'&&['Central Hospital','Freedom Stadium'].includes(station))?['8th Street - Park Avenue']:[];
+  return [...new Set([...(aliases[station]||[]),...nearbyV11,station])].filter(x=>valid.has(x));
+ }
+ if(l.id==='U22')return l.stops.includes(station)?[station]:[];
+ const shared=['Del Toro - Falmouth Square','Court Square','Court House'];
+ if(l.id==='Yellow'&&station==='Montclair')return [station];
+ if(shared.includes(station)){
+  const calls=l.stops.filter(x=>shared.includes(x));
+  return calls.length?calls:[];
+ }
+ return l.stops.includes(station)?[station]:[];
+}
+
+function isDirectService(l,station,t){
+ if(l.id==='C9'&&['Del Toro - Falmouth Square','Dames Street'].includes(station))return false;
+ if(l.id==='D2'&&['Central Hospital','Freedom Stadium'].includes(station))return false;
+ const names=[...routeStops(l,t,0),...routeStops(l,t,1)];
+ return names.some(n=>stationForStop(n)===station||n===station);
+}
+let directions={},showInactive=false,detailRoute=null,detailDir=0;
+$('inactiveToggle').onclick=()=>{showInactive=!showInactive;render();};
+function publicDestination(name){
+ const n=String(name);
+ if(/Joseph Square/i.test(n))return 'Joseph Square';
+ if(n==='Drybury Government Center')return 'Drybury';
+ if(n==='South Lucero Transit Center')return 'South Lucero';
+ if(n==='Rustad Station')return 'Rustad';
+ if(n==='Walker Road Metro')return 'Walker Road';
+ if(/^Central Hospital(?:\s+Metro)?(?:\s+Bay\s+[A-Z])?$/i.test(n))return 'Central Hospital';
+ return n.replace(/\s+Metro Station \(West\)$/i,' Metro Station').replace(/\s+\(West\)$/i,'').replace(/\s+Bay [A-Z]$/i,'').replace(/\s+Station Bay [A-Z]$/i,' Station');
+}
+function createCard(e,inactive=false){
+ const card=document.createElement('article');card.className='route';if(e.l.mode==='CITYBUS')card.classList.add('v161citycard');card.style.color=e.l.color;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','View details for '+e.l.id);
+ const options=e.options;
+ const active=options.length===1?options[0].dir:(options.some(x=>x.dir===directions[e.l.id])?directions[e.l.id]:e.active);
+ const chosen=options.find(x=>x.dir===active)||options[0];
+ const first=chosen.arr[0];
+ const top=document.createElement('div');top.className='top';
+ const left=document.createElement('div'),id=document.createElement('div');id.className='id';addRouteMark(id,e.l,'');
+ if(e.l.always){const badge=document.createElement('span');badge.className='always';badge.textContent='24/7';id.append(badge);}
+ if(false&&e.l.new&&e.coming){const badge=document.createElement('span');badge.className='always coming';badge.textContent='STARTS MON OCT 19';id.append(badge);}
+ const dest=document.createElement('div');dest.className='dest';dest.textContent='➜ '+publicDestination(chosen.dest);
+ const via=document.createElement('div');via.className='via';via.textContent=directionName(e.l,chosen.dir)+' · '+e.l.mode+(e.l.via?' · '+(/^(Limited Stop|Rush Only|Downtown circulator)/i.test(e.l.via)?e.l.via:'Via '+e.l.via):'')+(chosen.stop!==select.value?' · Near '+chosen.stop:'');
+ left.append(id,dest,via);
+ const right=document.createElement('div');right.className='eta';
+ const big=document.createElement('strong');big.textContent=first?first.eta:(e.coming?'STARTS MON':'NOT IN SERVICE');
+ right.append(big);
+ if(incidentsFor(e.l.id,chosen.dir).length){const flag=document.createElement('small');flag.className='delay-note';flag.textContent='⚠ Service alert · See details';right.append(flag);}
+ if(first){const unit=document.createElement('small');unit.textContent=first.eta<=60?'min · ◉':'min · scheduled';unit.title=first.eta<=60?'Updating simulated arrival estimate':'Scheduled time';right.append(unit);if(first.delay){const d=document.createElement('small');d.className='delay-note';d.textContent='⚠ +'+first.delay.minutes+' min · '+first.delay.reason;right.append(d);}}
+ top.append(left,right);card.append(top);
+ if(first){
+  const next=document.createElement('div');next.className='next';
+  for(const a of chosen.arr.slice(0,3)){
+   const pill=document.createElement('span');pill.className='pill';pill.textContent=a.eta+' min'+(a.eta<=60?' · ◉':' · scheduled');pill.title=a.eta<=60?'Updating simulated arrival estimate':'Scheduled time';next.append(pill);
+   if(a.short){const short=document.createElement('span');short.className='pill';short.textContent='SHORT TURN';next.append(short);}
+   if(a.last&&!e.l.always){const badge=document.createElement('span');badge.className='pill last';badge.textContent='LAST';next.append(badge);}
+  }card.append(next);
+ }else{
+  const note=document.createElement('div');note.className='more';
+  note.textContent=e.coming?'This route will enter simulated service Monday, October 19, 2026.':'No upcoming departures in the next 110 minutes.';
+  card.append(note);
+ }
+ if(options.length>1){
+  const direction=document.createElement('div');direction.className='direction';
+  const prev=document.createElement('button');prev.textContent='‹';prev.setAttribute('aria-label','Previous destination for '+e.l.id);
+  const note=document.createElement('span');note.textContent='↔ Swipe for other destination · '+(active===0?'1':'2')+'/2';
+  const following=document.createElement('button');following.textContent='›';following.setAttribute('aria-label','Next destination for '+e.l.id);
+  const switchDirection=()=>{directions[e.l.id]=options.find(x=>x.dir!==active).dir;render();};
+  prev.onclick=ev=>{ev.stopPropagation();switchDirection();};following.onclick=ev=>{ev.stopPropagation();switchDirection();};direction.append(prev,note,following);card.append(direction);
+  let touchX=null,touchY=null;
+  card.addEventListener('touchstart',ev=>{touchX=ev.touches[0].clientX;touchY=ev.touches[0].clientY;},{passive:true});
+  card.addEventListener('touchend',ev=>{if(touchX===null)return;const dx=ev.changedTouches[0].clientX-touchX,dy=ev.changedTouches[0].clientY-touchY;touchX=null;touchY=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3)switchDirection();},{passive:true});
+ }
+ const hint=document.createElement('div');hint.className='details-hint';hint.textContent='Tap for route details  ↗';card.append(hint);
+ card.addEventListener('click',ev=>{if(ev.target.closest('button'))return;openDetails(e.l,active);});
+ card.addEventListener('keydown',ev=>{if(ev.target===card&&(ev.key==='Enter'||ev.key===' ')){ev.preventDefault();openDetails(e.l,active);}});
+ return card;
+}
+function render(){
+ const clock=clockNow(),station=select.value,activeEntries=[],inactiveEntries=[];
+ $('clock').textContent='Lucero time · '+clock.clock;
+ for(const l of L){
+  if(l.id==='C29X'&&v16DaysSinceLaunch()!==null&&v16DaysSinceLaunch()>=21)continue;
+  const nearby=stopOptions(l,station,clock.min);if(!nearby.length)continue;
+  const options=[];
+  for(const dir of [0,1]){
+   const possibilities=nearby.filter(stop=>{const names=(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,clock.min,dir):(dir===0?routeStops(l,clock.min):[...routeStops(l,clock.min)].reverse());return names.indexOf(stop)>=0&&names.indexOf(stop)<names.length-1;});
+   if(!possibilities.length)continue;
+   const variants=possibilities.map(stop=>({stop,arr:departures(l,stop,dir,clock)}));
+   variants.sort((a,b)=>(a.arr[0]?.eta??Infinity)-(b.arr[0]?.eta??Infinity));
+   const best=variants[0],dest=(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,clock.min,dir).at(-1):(dir===0?routeStops(l,clock.min).at(-1):l.stops[0]);
+   options.push({dir,arr:best.arr,dest,stop:best.stop});
+  }
+  if(!options.length)continue;
+  const remembered=directions[l.id];
+  const active=options.some(x=>x.dir===remembered)?remembered:options[0].dir;
+  const chosen=options.find(x=>x.dir===active);
+  const e={l,options,active,arr:chosen.arr,coming:false,nearby:!isDirectService(l,station,clock.min)};
+  if(options.some(x=>x.arr.length))activeEntries.push(e);else inactiveEntries.push(e);
+ }
+ activeEntries.sort((a,b)=>Number(a.nearby)-Number(b.nearby)||a.l.id.localeCompare(b.l.id,undefined,{numeric:true}));
+ inactiveEntries.sort((a,b)=>Number(a.nearby)-Number(b.nearby)||a.l.id.localeCompare(b.l.id,undefined,{numeric:true}));
+ $('count').textContent=activeEntries.length+' active lines · '+'swipe to change direction';
+ const parent=$('routes');parent.replaceChildren();
+ if(!activeEntries.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='No upcoming departures at this station right now.';parent.append(empty);}
+ const splitDirections=false; // Always one card per route, swipe for the other direction.
+ for(const e of activeEntries){if(splitDirections){for(const option of e.options)parent.append(createCard({...e,options:[option],active:option.dir,arr:option.arr}));}else parent.append(createCard(e));}
+ const inactive=$('inactive');inactive.replaceChildren();
+ for(const e of inactiveEntries){inactive.append(createCard(e,true));}
+ inactive.hidden=!showInactive;
+ const toggle=$('inactiveToggle');toggle.hidden=!inactiveEntries.length;
+ toggle.textContent=(showInactive?'Hide':'Show')+' inactive lines ('+inactiveEntries.length+') '+(showInactive?'▴':'▾');
+ toggle.setAttribute('aria-expanded',String(showInactive));
+}
+
+function routeNotes(l){
+ const notes={
+ X2:['24/7. Every 20 minutes. Northbound serves Southern Avenue and Nick Street; southbound runs nonstop to Government Center Bay B. 33 min northbound / 31 min southbound.'],
+ X3:['24/7. Every 30 minutes 7 AM–9 PM, hourly overnight. Nonstop between Loves Travel Center & Dansom Drive and 22nd Street. 44-minute base trip.'],
+ X7:['24/7. Every 30 minutes 5 AM–9 PM, hourly overnight. Nonstop between Manassas State Metro and the airport AirTrain Long-Term Parking. 39-minute trip.'],
+ U20:['Weekdays peak 6–9 AM and 3–7 PM: every 20 minutes; otherwise every 25 minutes. Approx. 5:25 AM–11:30 PM. Listed landmarks are NOT final official bus stops.'],
+ D8:['Weekdays only. Eastbound approx. 4:30 AM–8:30 PM; westbound approx. 5:30 AM–10 PM. Peak every 30 minutes; off-peak every 35. Express between Southern Avenue & Eastern Avenue and DHQ. Landmarks are NOT final stops.'],
+ D10:['Weekdays only, 7 AM–9 PM, every 30 minutes. 22-minute trip. Travels near North Lucero High School via Walker Mill Road and west on Dames Street; official stop list pending.'],
+ 'Yellow Shuttle':['FREE replacement shuttle during October 16–19 track work. Every 20 minutes while operating.'],
+ D6:['Runs 24 hours. Extends to Central Hospital when D4 service ends.'],
+ D4:['Serves East Campus Transit Center.','Daytime and evening service; D6 covers Central Hospital after D4 ends.'],
+ C13:['24/7. Peak: every 10 minutes; off-peak: about every 15 minutes; midnight–4:30 AM: every 20 minutes.','Via Newington Avenue and University of Lucero West Campus.'],
+ C29:['24/7. Peak: every 10 minutes; off-peak: every 15 minutes; midnight–4:30 AM: every 20 minutes.','Some peak buses turn at Franklin Square instead of Culbreth. Serves North Lucero High School.'],
+ D12:['Eastbound first/last: 6:15 AM / 9:15 PM. Westbound first/last: 5:55 AM / 9:35 PM.','Every 20 minutes at peak and every 30 minutes off-peak. Via 18th Street.'],
+ U22:['Weekdays only. Southbound toward Stadium Hall: 5:00–9:30 AM. Northbound toward Manassas State: 3:00–9:00 PM.','Every 20 minutes in the peak direction. Only Stadium Hall and Manassas State are listed as station stops.'],
+ Yellow:['24/7. Extended eastbound to Montclair after midnight.','Oct 16–19: weekend track work at Business Square. Trains only between Gage Gehris–Young University and Lucero Convention Center–McNee, every 15 minutes. Alert expires Monday Oct 19 at 4:30 AM.','Starting Monday Oct 19, westbound trains alternate Gage Gehris–Young University and Drybury destinations, branching at Castle Rock (no intermediate stops).'],
+ Green:['24/7 service.'],
+ 'Southside Shuttle':['24/7 service.'],
+ S:['22nd Street is eastbound-only.'],
+ S34:['Via Aero Heights. Four Colby Road stops are in the Aero Heights neighborhood.'],
+ C29X:['Limited-stop route every 20 minutes, 5:00 AM–midnight. Begins Monday, October 19, 2026.','8th Street–Park Avenue ↔ Eastern Market.']
+ };return notes[l.id]||[];
+}
+function makeEl(tag,className,txt){const el=document.createElement(tag);if(className)el.className=className;if(txt!==undefined)el.textContent=txt;return el;}
+
+function railDisc(l,size=''){
+ const d=makeEl('span','line-disc '+size);
+ d.style.setProperty('--disc',l.color);
+ d.textContent=({'Red':'R','Green':'G','Orange':'O','Yellow':'Y','Purple':'P','Pink':'Pk','Southside Shuttle':'SS','2':'2','A':'A','S':'S','C':'C','P':'P'})[l.id]||l.id.slice(0,2);
+ d.setAttribute('aria-label',l.id+' Line');return d;
+}
+function addRouteMark(parent,l,size=''){
+ if(l.mode==='Bus'||l.mode==='CITYBUS'||l.mode==='Commuter'){parent.append(document.createTextNode(l.id));return;}
+ parent.append(railDisc(l,size));
+ const n=makeEl('span','disc-name',l.id);parent.append(n);
+}
+const AERO_HEIGHTS=new Set(['Colby Road & Pschigoda Highway','Colby Road & Clark Meadow Apartments','600 Colby Road','700 Colby Road']);
+function openDetails(l,dir){detailStop=null;detailBoardingStop=null;detailRoute=l;detailDir=dir;document.getElementById('detailsOverlay').hidden=false;document.body.classList.add('sheet-open');paintDetails();document.getElementById('detailsClose').focus();}
+function closeDetails(){document.getElementById('detailsOverlay').hidden=true;document.body.classList.remove('sheet-open');detailRoute=null;detailStop=null;detailBoardingStop=null;}
+$('detailsClose').onclick=closeDetails;
+$('detailsOverlay').addEventListener('click',e=>{if(e.target===$('detailsOverlay'))closeDetails();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detailRoute)closeDetails();});
+function departureBoard(l,boarding,dir,clock,count=18){
+ const all=[];
+ // Advance the simulated clock in overlapping 90-minute steps, then de-duplicate.
+ for(let advance=0;advance<=1440;advance+=90){
+  const minute=clock.min+advance,shift=Math.floor(minute/1440);
+  const c={...atShift(clock,shift),min:minute-shift*1440};
+  for(const a of departures(l,boarding,dir,c)){
+   const absolute=advance+a.eta;
+   if(absolute>=0&&!all.some(x=>Math.abs(x.absolute-absolute)<1&&x.dest===a.dest))all.push({...a,absolute});
+  }
+ }
+ return all.sort((a,b)=>a.absolute-b.absolute).slice(0,count);
+}
+function timeFromOffset(clock,offset){
+ const minutes=Math.round(clock.min+offset),minute=((minutes%1440)+1440)%1440;
+ return {label:formatMin(minute),day:Math.floor(minutes/1440)};
+}
+let detailStop=null;
+function stationForStop(stop){
+ const names={
+  'Central Hospital Metro Bay A':'Central Hospital',
+  'Freedom Stadium Metro':'Freedom Stadium',
+  'Government Center Bay A':'Government Center',
+  'Government Center Bay B':'Government Center',
+  'Government Center Bay E':'Government Center',
+  'Manassas State Metro':'Manassas State',
+  'S 33rd Street & Dames Street (Franklin Square)':'Franklin Square',
+  'Dames Street & S 33rd Street (Franklin Square)':'Franklin Square',
+  'Joseph Square Metro Station (East)':J,
+  'Joseph Square Metro Station (West)':J,
+  'Stadium Hall Bay D':'Stadium Hall',
+  'Stadium Hall Bay K':'Stadium Hall',
+  'Stadium Hall (2 Train)':'Stadium Hall',
+  'Culbreth Station Bay A':'Culbreth',
+  'Dames Street Metro':'Dames Street',
+  'Dames Street & N 33rd Street (Franklin Square)':'Franklin Square',
+  'North Lucero Highschool':'North Lucero High School',
+  '8th Street - Park Avenue Metro':'8th Street - Park Avenue',
+  'New Branswell Avenue Metro Bay A':'New Branswell Avenue - Arena',
+  'Defense Highway & New Branswell Avenue (Clifton Metro West)':'Clifton',
+  'New Branswell Avenue & Valley Pike (Clifton Metro East)':'Clifton',
+  'Trintrilly Metro Station Bay A':'Trintrilly Metro'
+ };
+ return names[stop]||stop;
+}
+function stopMatches(l,stop,clock){
+ const hub=stationForStop(stop);
+ if(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])return stopOptions(l,hub,clock.min).length>0 ||
+   [0,1].some(dir=>routeStops(l,clock.min,dir).includes(stop));
+ return stopOptions(l,hub,clock.min).length>0;
+}
+function openStop(stop){
+ detailStop=stop;
+ paintStop();
+}
+function paintStop(){
+ if(!detailStop)return;
+ const stop=detailStop,hub=stationForStop(stop),clock=clockNow();
+ const body=$('detailsBody');body.replaceChildren();
+ $('detailsTitle').textContent='Stop information';
+ $('detailsSub').textContent='Routes serving this stop';
+ const header=makeEl('div','stop-detail-header');
+ const back=makeEl('button','stop-detail-back','‹ Back to route');
+ back.onclick=()=>{detailStop=null;paintDetails();};
+ header.append(back,makeEl('h3','',stop));
+ if(hub!==stop)header.append(makeEl('p','sheet-muted','Connecting station: '+hub));
+ header.append(makeEl('p','sheet-muted','Select a service to see its directions and departure times.'));
+ body.append(header);
+ const serving=L.filter(l=>stopMatches(l,stop,clock));
+ serving.sort((a,b)=>a.mode.localeCompare(b.mode)||a.id.localeCompare(b.id,undefined,{numeric:true}));
+ if(!serving.length)body.append(makeEl('div','stop-empty','No routes currently listed at this stop.'));
+ for(const l of serving){
+  const b=makeEl('button','stop-service');
+  const code=makeEl('span','stop-service-code');code.style.color=l.color;addRouteMark(code,l,'small');
+  const info=makeEl('span','stop-service-info');
+  info.append(makeEl('strong','',l.mode));
+  const ends=(BUS_EXPRESS[l.id]||BUS_EXPRESS[l.id]||BUS_V11[l.id]||BUS_V10[l.id])?[(BUS_EXPRESS[l.id]||BUS_EXPRESS[l.id]||BUS_V11[l.id]||BUS_V10[l.id])[0][0],(BUS_EXPRESS[l.id]||BUS_EXPRESS[l.id]||BUS_V11[l.id]||BUS_V10[l.id])[0].at(-1)]:[l.stops[0],l.stops.at(-1)];
+  const dests=[...new Set(ends)].join(' ↔ ');
+  info.append(makeEl('small','',dests));
+  if(l.always)info.append(makeEl('small','','24/7'));
+  if(false&&l.new&&clock.date<START_NEW)info.append(makeEl('small','','Starts October 19'));
+  b.append(code,info,makeEl('span','stop-service-chevron','›'));
+  b.onclick=()=>{
+   detailRoute=l;
+   const dirs=[0,1].filter(d=>{
+    const names=(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,clock.min,d):(d===0?routeStops(l,clock.min):[...routeStops(l,clock.min)].reverse());
+    return names.some(n=>stationForStop(n)===hub||n===stop);
+   });
+   detailDir=dirs[0]??0;
+   detailStop=null;
+   // The main station selector remains unchanged; route details are shown for the tapped stop.
+   detailBoardingStop=stop;
+   paintDetails();
+  };
+  body.append(b);
+ }
+}
+let detailBoardingStop=null;
+function paintDetails(){
+ const l=detailRoute;if(!l)return;detailStop=null;
+ const clock=clockNow(),dir=detailDir,base=routeStops(l,clock.min,dir);
+ const stops=(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?base:(dir===0?base:[...base].reverse());
+ const destination=stops.at(-1);
+ const body=$('detailsBody');body.replaceChildren();
+ $('detailsTitle').textContent=l.id;
+ $('detailsSub').textContent=directionName(l,dir)+' · '+publicDestination(destination);
+ const hero=makeEl('div','departure-hero');hero.style.setProperty('--route',l.color);
+ const heroCode=makeEl('div','departure-code');if(l.mode==='Commuter')heroCode.classList.add('v163commuterhero');addRouteMark(heroCode,l,'large');if(l.mode==='CITYBUS'){heroCode.classList.add('v161citynumber');const brand=makeEl('span','v161logo');brand.innerHTML='<i>CITY</i><em>BUS</em>';heroCode.append(brand)}hero.append(heroCode);
+ hero.append(makeEl('div','departure-heading','➜ '+directionName(l,dir).replace('bound','')));
+ hero.append(makeEl('div','departure-destination',publicDestination(destination)));
+ if(l.via && l.id!=='X7')hero.append(makeEl('div','departure-via',/^(Limited Stop|Rush Only|Downtown circulator)/i.test(l.via)?l.via:'Via '+l.via));
+ const badges=makeEl('div','departure-badges');
+ if(l.always)badges.append(makeEl('span','','24/7'));if(l.mode==='CITYBUS'){const free=makeEl('span','v161free','🚌 FREE');badges.append(free)}
+ if(false&&l.new&&clock.date<START_NEW)badges.append(makeEl('span','','STARTS MON OCT 19'));
+ if(badges.childNodes.length)hero.append(badges);
+ // Active notices appear at the top of the route details only.
+ const activeEvents=incidentsFor(l.id,dir);
+ const plannedWork=['Yellow','Red','Pink'].includes(l.id)&&weekendTrackWorkActive();
+ const retirement=l.id==='C29X'&&v16DaysSinceLaunch()!==null&&v16DaysSinceLaunch()<21;
+ if(plannedWork||retirement||activeEvents.length){
+  const panel=makeEl('section','disruption-panel v163topalert');
+  if(plannedWork){panel.append(makeEl('h3','','⚠ Weekend track work · Business Square'));panel.append(makeEl('p','sheet-muted',l.id==='Yellow'?'Yellow Line service is shortened; FREE replacement shuttle operates overnight.':'No '+l.id+' Line train service during scheduled track work.'));}
+  if(retirement){panel.append(makeEl('h3','','⚠ C29X service change'));panel.append(makeEl('p','sheet-muted','Effective October 31, 2026, C29X will no longer be in service. Use C29 or free CITYBUS 35.'));}
+  for(const ev of activeEvents){panel.append(makeEl('h3','','⚠ '+ev.reason));panel.append(makeEl('p','sheet-muted',ev.segment+' · Approximately '+ev.minutes+' min additional travel time.'));}
+  body.append(panel);
+ }
+ body.append(hero);
+ const chooser=makeEl('div','sheet-dir');chooser.setAttribute('aria-label','Swipe left or right to change direction');
+ for(const d of [0,1]){
+  const b=makeEl('button',d===dir?'selected':'',directionName(l,d));
+  b.onclick=()=>{detailDir=d;paintDetails();};chooser.append(b);
+ }
+ body.append(chooser);
+ const swipeHint=makeEl('div','v162-swipehint','← Swipe to view the other direction →');body.append(swipeHint);
+ let touchStartX=null,touchStartY=null;
+ chooser.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;},{passive:true});
+ chooser.addEventListener('touchend',e=>{if(touchStartX===null)return;const dx=e.changedTouches[0].clientX-touchStartX,dy=e.changedTouches[0].clientY-touchStartY;touchStartX=null;touchStartY=null;if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)*1.2){detailDir=1-detailDir;paintDetails();}},{passive:true});
+ const selected=detailBoardingStop?stationForStop(detailBoardingStop):select.value;
+ const near=stopOptions(l,selected,clock.min).filter(x=>stops.includes(x));
+ const boarding=near.find(x=>stops.indexOf(x)<stops.length-1);
+ body.append(makeEl('div','departure-location',boarding?'Departures at '+boarding:'No boarding stop in this direction at '+selected));
+ const arr=boarding?departureBoard(l,boarding,dir,clock):[];
+ if(!arr.length){
+  const empty=makeEl('div','departure-board');empty.append(makeEl('div','departure-empty',boarding?'No scheduled departures found in the next 24 hours.':'Switch direction or select a station served by this route.'));body.append(empty);
+ }else{
+  let prevDay=-1,board=null;
+  for(const a of arr){
+   const time=timeFromOffset(clock,a.absolute);
+   if(time.day!==prevDay){
+    prevDay=time.day;board=makeEl('div','departure-board');
+    body.append(makeEl('div','departure-day',time.day===0?'Upcoming departures':time.day===1?'Tomorrow':'Upcoming departures'));
+    body.append(board);
+   }
+   const row=makeEl('div','departure-row');
+   row.append(makeEl('span','when',time.label));
+   row.append(makeEl('span','where',publicDestination(a.dest)+(a.short?' · Short turn':'')+(a.delay?' · '+a.delay.reason+' +'+a.delay.minutes+' min':'')+(a.absolute<=60?' · ◉':' · Scheduled')));
+   if(a.last&&!l.always)row.append(makeEl('span','last','LAST'));
+   board.append(row);
+  }
+ }
+ if(false&&['Yellow','Red','Pink'].includes(l.id)&&weekendTrackWorkActive()){
+  const notice=makeEl('section','disruption-panel');
+  notice.append(makeEl('h3','','⚠ Weekend track work · Business Square'));
+  const message=l.id==='Yellow'?'Yellow Line trains operate only between Gage Gehris–Young University and Lucero Convention Center–McNee every 15 minutes. FREE overnight replacement shuttle every 20 minutes.':'No '+l.id+' Line train service during the track work.';
+  notice.append(makeEl('p','sheet-muted',message));
+  notice.append(makeEl('p','sheet-muted','October 16–19 · Notice expires Monday, October 19 at 4:30 AM.'));
+  body.append(notice);
+ }
+ // Operational disruptions are shown above the route hero when active.
+ addGoRoute(l,body);
+ const extra=makeEl('details','departure-extra');extra.append(makeEl('summary','','Route stops & service information'));
+ const notes=routeNotes(l),freq=makeEl('section','sheet-section');
+ freq.append(makeEl('h3','','Service hours and frequency'));
+ const window=serviceWindow(l,clock,dir);
+ freq.append(makeEl('p','sheet-muted',(l.always?'24-hour service':window?'Approximate hours: '+formatMin(window[0])+'–'+formatMin(window[1]):'No service today')+' · Frequency varies by time of day.'));
+ for(const note of notes)freq.append(makeEl('div','sheet-note',note));
+ if(l.mode==='Bus'&&stops.length){const terminal=stops[0];const next=departureBoard(l,terminal,dir,clock,1)[0];freq.append(makeEl('div','sheet-note',next?'At '+terminal+': next bus departs in '+Math.ceil(next.absolute)+' min (scheduled terminal layover possible).':'At '+terminal+': no upcoming scheduled departure.'));}
+ if(l.id==='Yellow')freq.append(makeEl('div','sheet-note','Yellow extends to Montclair after midnight.'));
+ extra.append(freq);
+ const stopSection=makeEl('section','sheet-section');stopSection.append(makeEl('h3','','All stops · '+directionName(l,dir)));
+ const timeline=makeEl('div','');timeline.style.setProperty('--line',l.color);
+ for(const stop of stops){
+  if(l.id==='S'&&dir===1&&stop==='22nd Street')continue;
+  const stopButton=makeEl('div','stop-line stop-link'+(near.includes(stop)?' selected':''),stop);
+  stopButton.setAttribute('role','button');
+  stopButton.tabIndex=0;
+  stopButton.setAttribute('aria-label','See routes serving '+stop);
+  stopButton.onclick=()=>openStop(stop);
+  stopButton.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openStop(stop);}};
+  if(l.id==='S34'&&AERO_HEIGHTS.has(stop)&&!AERO_HEIGHTS.has(stops[stops.indexOf(stop)-1]))timeline.append(makeEl('div','stop-neighborhood','Aero Heights · neighborhood'));
+  if(l.id==='S34'&&AERO_HEIGHTS.has(stop))stopButton.title='Aero Heights neighborhood';
+  timeline.append(stopButton);
+}
+ stopSection.append(timeline);extra.append(stopSection);
+ extra.append(makeEl('p','sheet-muted','Fictional scheduled predictions, not live vehicle data.'));
+ body.append(extra);
+}
+function formatMin(m){if(m===1440)return '12:00 AM';const h=Math.floor(m/60),minute=m%60;return ((h%12)||12)+':'+String(minute).padStart(2,'0')+(h>=12?' PM':' AM');}
+
+
+const GO_SEED=id=>incidentHash('lucero-go-v13|'+id);
+function goStats(l){const h=GO_SEED(l.id),votes=+(localStorage.getItem('lucero-go-v13-rating-'+l.id)||0);return {onTime:84+(h%15),score:Math.min(5,Math.round((3.7+(h%13)*.1+votes*.08)*10)/10),riders:200+(h%8500),votes};}
+function showGo(){const modal=document.getElementById('goOverlay');modal.hidden=false;document.body.classList.add('sheet-open');const body=document.getElementById('goBody');body.replaceChildren();body.append(makeEl('p','sheet-muted','GO points and user accounts are fictional demo data; local ratings stay on this device.'));const b=makeEl('button','go-track','Open GO rankings');b.onclick=()=>{closeGo();document.querySelector('[data-tab="go"]').click()};body.append(b);}
+function closeGo(){document.getElementById('goOverlay').hidden=true;document.body.classList.remove('sheet-open')}
+function addGoRoute(l,body){
+ const st=goStats(l),section=makeEl('section','go-route');
+ section.append(makeEl('h3','','Route information'));
+ const fare=l.mode==='Commuter'?'$7.50':(l.mode==='CITYBUS'||l.id==='Yellow Shuttle'||l.mode==='Light rail')?'Free':l.mode==='Bus'?'$1.50':l.mode==='Metro'?'$3.50':'Free';
+ const fareButton=makeEl('button','fare-card-button');
+ fareButton.type='button';
+ fareButton.setAttribute('aria-label','Fare '+fare+'. View fare information');
+ fareButton.innerHTML='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></svg><span>'+fare+'</span><span class="fare-info-hint">Fare info ›</span>';
+ fareButton.onclick=()=>{const pop=document.getElementById('fareInfoOverlay');document.getElementById('fareInfoAmount').textContent=fare;document.getElementById('fareInfoMode').textContent=l.mode==='Commuter'?'Commuter bus':l.mode==='CITYBUS'?'CITYBUS':l.id==='Yellow Shuttle'?'Yellow Line Replacement Shuttle':l.mode==='Bus'?'Bus':l.mode==='Metro'?'Metro rail':'Light rail';pop.hidden=false;};
+ section.append(fareButton);
+ section.append(makeEl('p','sheet-muted','Rating: '+st.score.toFixed(1)+'/5 (demo) · Time accuracy: '+st.onTime+'% (simulated on-time performance)'));
+ const rate=makeEl('button','','★ Rate this route on this device');rate.onclick=()=>{const v=prompt('Rate '+l.id+' from 1 to 5 stars (saved only in this browser):');const rating=Number(v);if(!Number.isInteger(rating)||rating<1||rating>5)return;localStorage.setItem('lucero-go-v13-rating-'+l.id,rating);paintDetails()};section.append(rate);
+
+ body.append(section);
+}
+
+render();setInterval(render,10000);
+</script><style>
+body{padding-bottom:83px} .v135nav{position:fixed;bottom:0;left:0;right:0;z-index:16;background:#111a25;border-top:1px solid #344555;display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.v135nav>div{width:min(100%,720px);display:flex}.v135nav button{flex:1;min-width:0;border:0;border-radius:0;background:transparent;color:#aebccc;padding:10px 2px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:5px}.v135nav button b{font-size:21px}.v135nav button.active{color:#ff994f;background:#2c251f}.v135page{max-width:720px;margin:auto;padding:18px 16px}.v135page[hidden]{display:none!important}.v135card{background:#192f40;border:1px solid #365063;border-radius:14px;padding:15px;margin:12px 0}.v135card h3{margin:0 0 8px}.v135muted{font-size:12px;color:#afc2d0}.v135row{display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid #365063;padding:12px 0}.v135row:last-child{border:0}.v135badge{border-radius:8px;padding:6px 9px;background:#d7662d;color:#fff;font-weight:800;min-width:47px;text-align:center}.v135small{font-size:12px;color:#d1dfeb}.v135fav{background:#4c3c24;color:#ffcd7d}.v135action{background:#e66d32;border:0;padding:10px 14px}.v135title{font-size:25px;margin:4px 0 12px}.v135alert{border-left:4px solid #f7bd55}.v135seg{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.v135seg button.active{background:#e66d32;border-color:#e66d32}.v135page select{background:#e8f4ff;color:#18384b}.v135tracker{height:68vh;width:100%;border:0;background:#111}body.v135-home main,body.v135-track main,body.v135-alerts main,body.v135-go main{display:none}body.v135-metro .v135page{display:none}body.v135-home #v135home,body.v135-track #v135track,body.v135-alerts #v135alerts,body.v135-go #v135go{display:block!important}body.v135-metro #v135metrostar{display:block}#v135metrostar{display:none;padding:8px 16px;background:#132b3b}body.v135-metro #v135board{display:block}#v135board{display:none}#v135board{padding:12px 16px;background:#122735}.v135stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.v135stats .v135card{margin:0}.v135stats strong{font-size:24px}#v135board .v135row{padding:9px 0}
+.go-route-icon{display:inline-flex;align-items:center;min-height:36px}.go-bus-icon{background:#f7a64e;color:#18222e;border-radius:7px;padding:7px 12px;font-size:16px;font-weight:900}.go-rank{cursor:pointer}.v135card[role=button]:focus-visible{outline:2px solid #ff9b55}#v142riders .v135row{justify-content:space-between}#v142riders .v135row span{flex:1;margin-left:15px}</style><div id="v135metrostar"><button id="v135stationstar">☆ Favorite this station</button></div><div id="v135board"><h3>Combined station departure board</h3><div class="v135muted">Next simulated departures at this Metro station · connecting rail and bus</div><div id="v135boardrows"></div></div>
+<section class="v135page" id="v135home" hidden><h2 class="v135title">Welcome to Lucero Transit</h2><div class="v135muted">v14.3 · GO Card fare update · Fictional transit demo</div><div class="v135card"><h3>★ Favorite stations</h3><div id="v135favstations"></div><button class="v135action" data-tab="metro">Find a station →</button></div><div class="v135card"><h3>★ Favorite routes</h3><div id="v135favroutes"></div><button class="v135action" data-tab="metro">Explore routes →</button></div><div class="v135card"><h3>Service overview</h3><div id="v135overview"></div><button data-tab="alerts">View service alerts →</button></div></section>
+
+<section class="v135page" id="v135alerts" hidden><h2 class="v135title">Service status</h2><p class="v135muted">Automated simulated incidents · balanced frequency (approximately 5–10% of active services)</p><div id="v135alertlist"></div></section>
+<nav class="v135nav" aria-label="Main navigation"><div><button data-tab="home"><b>⌂</b>Home</button><button data-tab="metro"><b>◎</b>Your Metro</button><button data-tab="alerts"><b>⚠</b>Alerts</button></div></nav><script>
+(()=>{
+const v=id=>document.getElementById(id), esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+let currentTab='home', period='Month', metric='Points', group='All';
+const store='lucero-v135-favorites';let favorites;try{favorites=JSON.parse(localStorage.getItem(store)||'{"stations":[],"routes":[]}')}catch(e){favorites={stations:[],routes:[]}};
+function save(){localStorage.setItem(store,JSON.stringify(favorites))}
+function toggle(type,id){let list=favorites[type],i=list.indexOf(id);if(i>=0)list.splice(i,1);else list.push(id);save();home();board()}
+function tab(name){currentTab=name;document.body.className=document.body.className.replace(/\bv135-(home|metro|alerts|go)\b/g,'').trim();document.body.classList.add('v135-'+name);document.querySelectorAll('.v135nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='home')home();if(name==='metro')board();if(name==='alerts')alerts();window.scrollTo(0,0)}
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.tab)));
+function home(){let fs=v('v135favstations'),fr=v('v135favroutes');fs.innerHTML=favorites.stations.length?favorites.stations.map(s=>`<div class="v135row"><button data-station="${esc(s)}">${esc(s)} →</button><button data-unfav-station="${esc(s)}" aria-label="Remove favorite">★</button></div>`).join(''):'<p class="v135muted">No saved stations yet.</p>';fr.innerHTML=favorites.routes.length?favorites.routes.map(id=>`<div class="v135row"><button data-route="${esc(id)}">${esc(id)} →</button><button data-unfav-route="${esc(id)}" aria-label="Remove favorite">★</button></div>`).join(''):'<p class="v135muted">No saved routes yet.</p>';fs.querySelectorAll('[data-station]').forEach(b=>b.onclick=()=>{select.value=b.dataset.station;select.dispatchEvent(new Event('change'));tab('metro')});fs.querySelectorAll('[data-unfav-station]').forEach(b=>b.onclick=()=>toggle('stations',b.dataset.unfavStation));fr.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{tab('metro');let l=L.find(l=>l.id===b.dataset.route);if(l)openDetails(l,0)});fr.querySelectorAll('[data-unfav-route]').forEach(b=>b.onclick=()=>toggle('routes',b.dataset.unfavRoute));let count=incidentState().incidents.length;v('v135overview').innerHTML=`<p>${count?count+' simulated active incident(s)':'No active simulated incidents'} across the network.</p><p class="v135muted">Station and alert times use the same simulated timetable.</p>`}
+function board(){let s=select.value;v('v135stationstar').textContent=(favorites.stations.includes(s)?'★ Remove favorite':'☆ Favorite')+' · '+publicDestination(s);let rows=[];let clock=clockNow();for(let l of L){let near=stopOptions(l,s,clock.min);if(!near.length||!isDirectService(l,s,clock.min))continue;for(let dir of [0,1]){let possible=near.filter(st=>{let names=(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,clock.min,dir):(dir===0?routeStops(l,clock.min,dir):[...routeStops(l,clock.min,dir)].reverse());return names.indexOf(st)>=0&&names.indexOf(st)<names.length-1});if(!possible.length)continue;let options=possible.map(st=>({st,arr:departures(l,st,dir,clock)})).filter(x=>x.arr.length).sort((a,b)=>a.arr[0].eta-b.arr[0].eta);if(!options.length)continue;let dest=options[0].arr[0].dest;for(let a of options[0].arr.slice(0,3))rows.push({l,dir,dest,a})}}rows.sort((a,b)=>a.a.eta-b.a.eta||a.l.id.localeCompare(b.l.id));v('v135boardrows').innerHTML=rows.slice(0,25).map(x=>`<div class="v135row"><button class="v135badge ${x.l.mode==='Commuter'?'v161commuterbadge':''}" data-line="${esc(x.l.id)}" data-dir="${x.dir}" style="background:${x.l.mode==='Commuter'?'transparent':esc(x.l.color)}">${esc(x.l.id)}</button><span style="flex:1"><strong>${esc(x.dest)}</strong><br><span class="v135small">${esc(x.l.mode)} · ${x.a.delay?'+'+x.a.delay.minutes+' min · '+esc(x.a.delay.reason):'On time'}${x.a.skipped?' · Trip skipped':''}</span></span><strong>${x.a.skipped?'Skipped':x.a.eta+' min'}</strong></div>`).join('')||'<p class="v135muted">No upcoming departures at this station.</p>';v('v135boardrows').querySelectorAll('[data-line]').forEach(b=>b.onclick=()=>{const l=L.find(l=>l.id===b.dataset.line);if(l)openDetails(l,Number(b.dataset.dir))});}
+v('v135stationstar').onclick=()=>toggle('stations',select.value);select.addEventListener('change',board);
+const originalOpen=openDetails;openDetails=function(l,d){originalOpen(l,d);let root=v('sheet');if(!root)root=document.querySelector('.sheet-backdrop:not([hidden]) .sheet');if(!root)return;let prior=root.querySelector('.v135routefav');if(prior)prior.remove();let btn=document.createElement('button');btn.className='v135routefav';btn.textContent=(favorites.routes.includes(l.id)?'★ Remove favorite':'☆ Favorite route')+' · '+l.id;btn.onclick=()=>{toggle('routes',l.id);btn.textContent=(favorites.routes.includes(l.id)?'★ Remove favorite':'☆ Favorite route')+' · '+l.id};root.prepend(btn)};
+function alerts(){let list=incidentState().incidents;const planned=weekendTrackWorkActive()?`<div class="v135card v135alert"><h3>⚠ Weekend track work · Business Square</h3><p><b>Red Line:</b> No train service.<br><b>Pink Line:</b> No train service.<br><b>Yellow Line:</b> Trains run Gage Gehris–Young University ↔ Lucero Convention Center–McNee every 15 minutes. FREE overnight replacement shuttle every 20 minutes.</p><p class="v135muted">October 16–19 · Alert expires Monday, October 19 at 4:30 AM.</p><div><button data-work-line="Yellow">Yellow Line details →</button> <button data-work-line="Red">Red Line details →</button> <button data-work-line="Pink">Pink Line details →</button></div></div>`:'';v('v135alertlist').innerHTML=planned+(list.length?list.map((x,i)=>`<div class="v135card v135alert"><h3>⚠ ${esc(x.reason||x.type||'Service disruption')}</h3><div>${esc((x.affected||[]).join(', '))}</div><p class="v135muted">${x.minutes||x.delay||'Variable'} min delay · Simulated</p></div>`).join(''):(planned?'':'<div class="v135card">✓ No active simulated service disruptions right now.</div>'));v('v135alertlist').querySelectorAll('[data-work-line]').forEach(b=>b.onclick=()=>{tab('metro');const line=L.find(l=>l.id===b.dataset.workLine);if(line)openDetails(line,0);});}
+function go(){
+ const periods=[['v135period',['Month','All Time'],period,x=>period=x],['v135metric',['Points','On-time','Ratings'],metric,x=>metric=x],['v135group',['All','Rail','Bus'],group,x=>group=x]];
+ for(const [id,values,current,set] of periods){const p=v(id);p.innerHTML=values.map(x=>`<button class="${x===current?'active':''}" data-value="${x}">${x}</button>`).join('');p.querySelectorAll('button').forEach(b=>b.onclick=()=>{set(b.dataset.value);go()})}
+ const lines=L.filter(l=>group==='All'||(group==='Bus'?l.mode==='Bus':l.mode!=='Bus'));
+ const points=l=>goRiders(l).reduce((sum,x)=>sum+x.points,0);
+ lines.sort((a,b)=>{const A=goStats(a),B=goStats(b);return metric==='Points'?points(b)-points(a):metric==='On-time'?B.onTime-A.onTime:B.score-A.score});
+ v('v135summary').innerHTML=`<div class="v135card"><strong>${period==='Month'?'This Month':'All Time'}</strong><div class="v135muted">Fictional demo points · tap a line for user rankings</div></div>`;
+ const board=v('v135leaderboard');board.replaceChildren();
+ lines.forEach((l,i)=>{
+  const st=goStats(l),row=document.createElement('div');row.className='v135card v135row';row.style.cursor='pointer';row.tabIndex=0;row.setAttribute('role','button');row.setAttribute('aria-label','View route performance for '+l.id);
+  const rank=makeEl('strong','','#'+(i+1));const mark=makeEl('span','go-route-icon');if(l.mode==='Bus'){mark.classList.add('go-bus-icon');mark.textContent=l.id}else{mark.append(railDisc(l,'small'))}
+  const title=makeEl('div','');title.style.flex='1';title.append(mark);
+  const right=makeEl('strong','',metric==='Points'?'View riders ›':metric==='On-time'?st.onTime+'%':st.score.toFixed(1)+'/5 ★');
+  row.append(rank,title,right);row.onclick=()=>showGoRiders(l);row.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showGoRiders(l)}};board.append(row);
+ });
+}
+function goRiders(l){
+ const names=['AeroFox','MetroNova','CityRider','NightOwl','LuceroFan','UrbanPilot','StreetMap','TransitAce','BlueLine','OrangeSky','RailRunner','BusExplorer'];
+ const seed=GO_SEED(l.id),all=period==='All Time';
+ return names.map((name,i)=>({name,points:((seed>>>((i%4)*6))%170+30)*(all?9:1)+(i*13%29)})).sort((a,b)=>b.points-a.points);
+}
+function showGoRiders(l){
+ const overlay=document.getElementById('v142riders');overlay.hidden=false;
+ document.getElementById('v142ridersTitle').textContent=l.id+' · '+(period==='Month'?'Monthly':'All-time')+' GO points';
+ const content=document.getElementById('v142ridersList');content.replaceChildren();
+ content.append(makeEl('p','sheet-muted','Fictional example usernames and individual demo points. No real user accounts are connected.'));
+ goRiders(l).forEach((person,i)=>{const row=makeEl('div','v135card v135row');row.append(makeEl('strong','','#'+(i+1)),makeEl('span','',person.name),makeEl('strong','',person.points.toLocaleString()+' pts'));content.append(row)});
+}
+function closeGoRiders(){document.getElementById('v142riders').hidden=true}
+
+setInterval(()=>{if(currentTab==='home')home();if(currentTab==='metro')board();if(currentTab==='alerts')alerts();},15000);
+tab('home');
+})();
+</script><div id="fareInfoOverlay" class="fare-info-backdrop" hidden role="presentation"><section class="fare-info-dialog" role="dialog" aria-modal="true" aria-labelledby="fareInfoTitle"><button class="fare-info-close" type="button" aria-label="Close fare information" onclick="document.getElementById('fareInfoOverlay').hidden=true">×</button><div class="fare-info-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></svg></div><h2 id="fareInfoTitle">Fare information</h2><p id="fareInfoMode"></p><strong id="fareInfoAmount"></strong><p>You can pay with your <b>GO Card</b>.</p><button type="button" class="fare-info-done" onclick="document.getElementById('fareInfoOverlay').hidden=true">Done</button></section></div><style>.fare-card-button{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;margin:10px 0;border:1px solid #647b90;border-radius:12px;background:#1a3447;color:#fff;font-weight:750;font-size:17px;cursor:pointer}.fare-info-hint{font-size:12px;font-weight:500;color:#bdd0dd}.fare-info-backdrop{position:fixed;inset:0;z-index:9999;background:#000b;display:flex;align-items:center;justify-content:center;padding:18px}.fare-info-backdrop[hidden]{display:none!important}.fare-info-dialog{position:relative;background:#192b3a;border:1px solid #50657a;border-radius:20px;padding:26px;width:min(100%,380px);color:#fff;text-align:center;box-shadow:0 20px 60px #0008}.fare-info-dialog h2{margin:10px 0}.fare-info-dialog strong{font-size:34px;color:#ffae67}.fare-info-dialog p{color:#d8e5ef}.fare-info-icon{color:#ffae67}.fare-info-close{position:absolute;right:12px;top:8px;background:none;border:0;color:white;font-size:27px;cursor:pointer}.fare-info-done{background:#e97639;color:white;border:0;border-radius:10px;padding:11px 30px;margin-top:8px;cursor:pointer}</style><script>document.getElementById('fareInfoOverlay').addEventListener('click',function(e){if(e.target===this)this.hidden=true});document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('fareInfoOverlay').hidden=true});</script>
+<style>
+.v16browse{margin:16px 0;padding:17px;background:#192b3b;border:1px solid #385166;border-radius:16px;color:#edf4fc}
+.v16browse h3{margin:0 0 7px}.v16browse p{color:#a8bfd0;font-size:13px}
+.v16fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v16fields label{font-size:12px;color:#bad0e2;display:block;margin-bottom:5px}.v16fields select,.v16search{width:100%;padding:12px;background:#10202f;border:1px solid #4b647a;color:#fff;border-radius:9px;font-size:14px;box-sizing:border-box}
+.v16area{margin:12px 0}.v16filters{display:flex;gap:5px;flex-wrap:wrap;margin:12px 0}.v16filters button{border:1px solid #52687b;background:#142536;color:#e7f3ff;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer}.v16filters button.active{background:#e8662e;border-color:#e8662e;color:#fff}
+.v16item{display:flex;align-items:center;gap:12px;border:1px solid #385166;background:#112434;border-radius:12px;padding:11px;margin:8px 0;color:white;width:100%;text-align:left;cursor:pointer}.v16pill{padding:9px;min-width:43px;text-align:center;font-weight:900;border-radius:8px;color:#102336;background:#55bceb}.v16item small{display:block;color:#abc0d0;margin-top:4px}.v16free{display:inline-flex;align-items:center;border:1px solid #47c879;border-radius:7px;color:#5ee18d;font-size:10px;font-weight:900;padding:2px 5px;margin-left:7px}.v16empty{padding:15px;border:1px dashed #607386;border-radius:10px;color:#b4c6d6}.v16notice{border:1px solid #e9a34e;background:#3b3023;color:#ffe1a3;border-radius:11px;padding:12px;margin:10px 0}.v16citybus{font-weight:950;letter-spacing:1px;color:#f5c518}.v16tracker{border:1px solid #39556d;border-radius:12px;padding:12px;margin-top:12px}.v16tracker svg{width:100%;height:auto;background:#101f2b;border-radius:10px}.v16tracker button{background:#29475e;border:1px solid #5b819d;color:white;border-radius:8px;padding:9px;margin:5px 4px 0 0}.v16metrofilters{padding:9px 14px;border:1px solid #34495a;border-radius:12px;margin:12px 0}.v16metrofilters select{background:#142536;color:#fff;border:1px solid #59738b;border-radius:8px;padding:9px}
+@media(max-width:480px){.v16fields{grid-template-columns:1fr}}
+</style>
+<script>
+(()=>{
+ const get=id=>document.getElementById(id), h=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+ const data={Lucero:{
+ 'Burke County':['Littlewood','Littlewood National Airport','East Littlewood'],
+ 'Nicholas County':['Castle Rock','Gage Gehris','Young University','Golden Coast','Orvard','Brittenham','Mount City'],
+ 'Glover County':['Hilltop','Glover','Fort William','Hilltop University','Drybury','Minerva'],
+ 'South County':['Corinburg','Trintrilly','Roswell','Markham','Schildkraut','DHQ','Pennbrook','Saratoga','Odenton','Airfield Road','Southport','Target Center','Ballston'],
+ 'Gannon County':['Gannon','Abley','Sayersville','Beadles','Muzan','North Muzan','Cordell','Muzan Heights','Burtonsville','Hopewell','Beadles Convention Center','Muzan - Gannon Town Center'],
+ 'Northeast County':[],
+ 'Camron County':['Pschigoda','West Pschigoda','Fairfax','Springfield','Glenarden','Point Pleasant','Manassas','Manassas State University','Meli'],
+ 'City of Lucero':{'Downtown':['Government Center','Southcity Crossing','Central Hospital','Post Street','Old Town Crossing','Bing Center - Cordan Street','Business Square','Phoenix Heights','McNee'],'West End':['West End'],'Ox Town':['Ox Town'],'8th Street - Park Avenue':['8th Street - Park Avenue'],'Southside':['Clifton','Cascades','Seat Pleasant'],'South Lucero':['C Street Corridor','Golden Coast Mall','Southern Park','Walker Road','South Lucero Transit Center'],'University of Lucero':['University of Lucero'],'North Lucero':['Dames Street Corridor','Joseph Square','Franklin Square','Del Toro','Stadium Hall','Court House','Court Square','Falmouth Square','Zoo','Cagetown'],'Westmore Avenue':['Westmore Avenue'],'Crossley Park':['Crossley Park'],'Culbreth':['Culbreth'],'John Roxbury University':['John Roxbury University'],'Lucero International Airport':['Lucero International Airport'],'East Lucero':['Burdett','North Burdett','Toriyama Village','East Complex','Saint Owen']}
+ },Alexandria:{'Gibbon County':['Corbet','Rustad','Knoxville','Snowfoot','University of Alexandria'],'Prince George County':['Alexandria State University','Prince George']}};
+ const alias={'Rustad':'Rustad Station','McNee':'Lucero Convention Center - McNee','Joseph Square':'Joseph Square - NLCC - Law Center','Crossley Park':'Crossly Park','Dames Street Corridor':'Dames Street','C Street Corridor':'C Street - Ox Town','Zoo':'Winnipeg Avenue - Zoo','Fordham–East Station':'Fordham - East Station','Gage Gehris':'Gage Gehris - Young University','Young University':'Gage Gehris - Young University','Drybury':'Drybury Metro','Trintrilly':'Trintrilly Metro','South Lucero':'South Lucero Transit Center'};
+ const box=document.createElement('section');box.className='v16browse';box.innerHTML=`<h3>📍 Find Transit by Area</h3><p>Choose a state, county and community. Only confirmed stops and corridors are matched; fictional departure predictions are not live GPS.</p><input id="v16search" class="v16search" placeholder="Search a route, station or community" aria-label="Search locations and routes"><div class="v16fields" style="margin-top:12px"><div><label for="v16state">State</label><select id="v16state"><option>Lucero</option><option>Alexandria</option></select></div><div><label for="v16county">County / independent city</label><select id="v16county"></select></div></div><div class="v16fields v16area"><div><label for="v16district">District (City of Lucero)</label><select id="v16district"></select></div><div><label for="v16community">Community / location</label><select id="v16community"></select></div></div><div class="v16filters" id="v16filters"></div><div id="v16results" aria-live="polite"></div>`;
+ const home=get('v135home');home.insertBefore(box,home.children[2]||null);
+ const state=get('v16state'),county=get('v16county'),district=get('v16district'),community=get('v16community'),search=get('v16search'),results=get('v16results');let filter='All';
+ const opts=(el,items,placeholder)=>{el.innerHTML='<option value="">'+h(placeholder)+'</option>'+items.map(x=>'<option value="'+h(x)+'">'+h(x)+'</option>').join('')};
+ const districts=()=>{let d=data[state.value][county.value];return d&&!Array.isArray(d)?d:null};
+ const counties=()=>{opts(county,Object.keys(data[state.value]),'Select county or city');opts(district,[],'Select district');opts(community,[],'Select community');refresh()};
+ const areas=()=>{const d=districts();district.parentElement.style.display=d?'':'none';if(d){opts(district,Object.keys(d),'Select district');opts(community,[],'Select community')}else opts(community,Array.isArray(data[state.value][county.value])?data[state.value][county.value]:[],'Select community');refresh()};
+ const districtChanged=()=>{opts(community,districts()?.[district.value]||[],'Select location');refresh()};
+ const categories=['All','Bus','Rail','Commuter'];get('v16filters').innerHTML=categories.map(x=>'<button type="button" data-filter="'+x+'">'+x+'</button>').join('');
+ get('v16filters').onclick=e=>{const b=e.target.closest('[data-filter]');if(!b)return;filter=b.dataset.filter;refresh()};
+ const mode=l=>l.mode==='Commuter'?'Commuter':['Metro','Light rail'].includes(l.mode)?'Rail':'Bus';
+ const matches=(l,place)=>{const norm=x=>x.toLowerCase().replace(/[^a-z0-9]/g,'');const q=norm(alias[place]||place);return l.stops.some(stop=>{const s=norm(stop);return s===q||s.startsWith(q)&&q.length>5||q.startsWith(s)&&s.length>6})};
+ const show=l=>{const city=l.mode==='CITYBUS',commuter=l.mode==='Commuter',rail=l.mode==='Metro'||l.mode==='Light rail';
+  const tag=city?'<span class="v16free">🚌 FREE</span>':'';
+  const brand=city?'<span class="v161logo"><i>CITY</i><em>BUS</em></span>':'';
+  const disc=rail?'<span class="line-disc small" style="--disc:'+h(l.color)+'">'+h(l.id==='Southside Shuttle'?'SS':l.id)+'</span>':
+   '<span class="v162route-mark '+(city?'v161citypill':commuter?'v161commuterpill':'v162busdisc')+'" style="--disc:'+h(l.color)+'">'+h(l.id)+'</span>';
+  return '<button type="button" class="v16item" data-route="'+h(l.id)+'">'+disc+'<span class="v162findtext">'+brand+tag+'<strong>'+h(l.mode)+' · '+h(l.id)+'</strong><small>'+h(publicDestination(l.stops[0]))+' ↔ '+h(publicDestination(l.stops.at(-1)))+'</small></span><span style="margin-left:auto">›</span></button>';
+ };
+ function refresh(){
+  get('v16filters').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));
+  const place=community.value,query=search.value.trim();const q=query.toLowerCase();
+  let list=L.filter(l=>mode(l)===filter||filter==='All').filter(l=>l.id!=='C29X'||v16DaysSinceLaunch()===null||v16DaysSinceLaunch()<21);
+  if(q){
+   const norm=x=>String(x).toLowerCase().replace(/[^a-z0-9]/g,'');const nq=norm(q);
+   const known=[...new Set([...Object.values(data.Lucero).flatMap(v=>Array.isArray(v)?v:Object.values(v).flat()),...Object.values(data.Alexandria).flat()])];
+   const matchedPlaces=known.filter(x=>norm(x).includes(nq));
+   list=list.filter(l=>norm(l.id).includes(nq)||l.stops.some(s=>norm(s).includes(nq))||matchedPlaces.some(p=>matches(l,p)));
+  }else if(place)list=list.filter(l=>matches(l,place));else list=[];
+  const label=q?'Search results for “'+h(query)+'”':place?'Routes serving '+h(place):'';
+  results.innerHTML=list.length?'<b>'+label+' · '+list.length+' route'+(list.length===1?'':'s')+'</b>'+list.map(show).join(''):
+    q?'<div class="v16empty">No results found. Try a route number, station or neighborhood.</div>':
+    place?'<div class="v16empty">No routes available yet.</div>':
+    county.value&&!((Array.isArray(data[state.value][county.value])?data[state.value][county.value].length:Object.keys(data[state.value][county.value]||{}).length))?'<div class="v16empty">No locations available yet.</div>':
+    '<p>Select a community or search to see available routes.</p>';
+ }
+
+ state.onchange=counties;county.onchange=areas;district.onchange=districtChanged;community.onchange=refresh;search.oninput=refresh;counties();
+ results.onclick=e=>{const btn=e.target.closest('[data-route]');if(!btn)return;const l=L.find(x=>x.id===btn.dataset.route);if(l){openDetails(l,0);}};
+ // Service filters on Your Metro; retains original station, route cards, favorites and navigation.
+ const metroFilters=document.createElement('div');metroFilters.className='v16metrofilters';metroFilters.innerHTML='<label for="v16metrofilter">Show services: </label><select id="v16metrofilter"><option>All</option><option>Bus</option><option>Rail</option><option>Commuter</option></select>';
+ get('routes').parentElement.insertBefore(metroFilters,get('routes'));
+ get('v16metrofilter').onchange=()=>{const selected=get('v16metrofilter').value;for(const section of [get('routes'),get('inactive')]){for(const card of section.children){const id=[...L].find(l=>card.textContent.includes(l.id));if(id)card.style.display=selected==='All'||mode(id)===selected?'':'none';}}};
+ // C29X transition alerts and inactive labeling, conditional on explicit release timestamp.
+ function notice(){const d=v16DaysSinceLaunch(),alert=get('v16retirealert');if(alert)alert.remove();get('v16retirealertalerts')?.remove();get('v163retiremetro')?.remove();if(d===null||d>=21)return;const date=new Date(new Date(V16_LAUNCH_AT).getTime()+14*86400000).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'long',day:'numeric',year:'numeric'});const el=document.createElement('div');el.id='v16retirealert';el.className='v16notice';el.innerHTML=`<b>⚠ C29X service change</b><p>Effective ${h(date)}, C29X will no longer be in service. To continue your trip, please use C29 or free CITYBUS 35.${d>=14?' <b>No Longer in Service.</b>':''}</p>`;home.prepend(el);const metroCopy=el.cloneNode(true);metroCopy.id='v163retiremetro';get('v163retiremetro')?.remove();get('workAlert').insertAdjacentElement('afterend',metroCopy);const alertPage=get('v135alerts');if(alertPage){const copy=el.cloneNode(true);copy.id='v16retirealertalerts';alertPage.prepend(copy)}}
+ notice();
+ // Distinguish operator on detail panel, without changing underlying stop data.
+ const observer=new MutationObserver(()=>{const overlay=get('detailsOverlay');if(overlay.hidden)return;const title=get('detailsTitle')?.textContent||'';const id=title.match(/\b(30|31|34|35|40|41|42|807|808|810|C29X)\b/)?.[1];const l=L.find(x=>x.id===id);if(!l)return;let note=get('v16detailnote');if(!note){note=document.createElement('div');note.id='v16detailnote';note.className='v16notice';get('detailsBody').prepend(note)}note.textContent=l.mode==='CITYBUS'?'CITYBUS · FREE · 24/7':l.mode==='Commuter'?'Commuter bus · sky blue':id==='C29X'?'C29X · service changes October 31, 2026':' ';});
+ observer.observe(get('detailsOverlay'),{attributes:true,childList:true,subtree:false});
+})();
+</script>
+</body></html>
