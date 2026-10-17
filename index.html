@@ -53,7 +53,7 @@
 </style><style>
 /* v16.2 service browser and direction navigation */
 .v162route-mark{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:900}
-.v162busdisc{border:3px solid var(--disc);border-radius:50%;background:#142b3d;color:var(--disc);height:38px;min-width:38px;padding:0 4px;font-size:12px}
+.v162busdisc{border:0;border-radius:0;background:transparent;color:var(--disc);height:auto;min-width:48px;padding:0;font-size:34px;line-height:1.05;font-weight:1000;letter-spacing:-1.5px;justify-content:flex-start}
 .v16item .line-disc.small{flex-shrink:0}
 .v16item .v162findtext{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;flex:1}
 .v16item .v162findtext strong{font-size:13px;color:#f3f7fc}
@@ -431,7 +431,7 @@ function departures(l,stop,dir,clock){
  arr.forEach(a=>{if(a.dest==='South Lucero Transit Center')a.dest='South Lucero';if(a.dest==='Rustad Station')a.dest='Rustad';});
  return arr.sort((a,b)=>a.eta-b.eta).slice(0,4);
 }
-const axes={X2:'NS',X3:'EW',X7:'NS',U20:'NS',D8:'EW',D10:'NS','Yellow Shuttle':'EW',D2:'EW',U21:'NS',S33:'SN',D18:'EW',D20:'EW',D14:'EW',D16:'SN',D16X:'SN',C7:'EW',C9:'EW',C29X:'EW',Yellow:'EW',Pink:'NS',Purple:'NS',Green:'NS',Red:'EW',Orange:'EW','Southside Shuttle':'SN','2':'EW',A:'EW',S:'EW',P:'NS',C:'EW',D4:'NS',D6:'NS',S34:'SN',C13:'SN',C29:'EW',D12:'EW',U22:'SN',40:'SN',41:'SN',42:'NS'};
+const axes={X2:'NS',X3:'EW',X7:'NS',U20:'NS',D8:'EW',D10:'NS','Yellow Shuttle':'EW',D2:'EW',U21:'NS',S33:'SN',D18:'EW',D20:'EW',D14:'EW',D16:'SN',D16X:'SN',C7:'EW',C9:'EW',C29X:'EW',Yellow:'EW',Pink:'NS',Purple:'NS',Green:'NS',Red:'EW',Orange:'EW','Southside Shuttle':'SN','2':'EW',A:'EW',S:'EW',P:'NS',C:'EW',D4:'NS',D6:'NS',S34:'SN',C13:'SN',C29:'EW',D12:'EW',U22:'SN',40:'NS',41:'NS',42:'SN',808:'EW',810:'EW'};
 function directionName(l,dir){if(l.id==='D2')return dir===0?'Clockwise':'Counterclockwise';const pair=axes[l.id]||'WE';const names={N:'Northbound',S:'Southbound',E:'Eastbound',W:'Westbound'};return names[pair[dir]];}
 function stopOptions(l,station,t=clockNow().min){
  if(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id]){
@@ -934,7 +934,7 @@ tab('home');
  const show=l=>{const city=l.mode==='CITYBUS',commuter=l.mode==='Commuter',rail=l.mode==='Metro'||l.mode==='Light rail';
   const tag=city?'<span class="v16free">🚌 FREE</span>':'';
   const brand=city?'<span class="v161logo"><i>CITY</i><em>BUS</em></span>':'';
-  const disc=rail?'<span class="line-disc small" style="--disc:'+h(l.color)+'">'+h(l.id==='Southside Shuttle'?'SS':l.id)+'</span>':
+  const disc=rail?'<span class="line-disc small" style="--disc:'+h(l.color)+'">'+h(({'Red':'R','Green':'G','Orange':'O','Yellow':'Y','Purple':'P','Pink':'Pk','Southside Shuttle':'SS','2':'2','A':'A','S':'S','C':'C','P':'P'})[l.id]||l.id.slice(0,2))+'</span>':
    '<span class="v162route-mark '+(city?'v161citypill':commuter?'v161commuterpill':'v162busdisc')+'" style="--disc:'+h(l.color)+'">'+h(l.id)+'</span>';
   return '<button type="button" class="v16item" data-route="'+h(l.id)+'">'+disc+'<span class="v162findtext">'+brand+tag+'<strong>'+h(l.mode)+' · '+h(l.id)+'</strong><small>'+h(publicDestination(l.stops[0]))+' ↔ '+h(publicDestination(l.stops.at(-1)))+'</small></span><span style="margin-left:auto">›</span></button>';
  };
@@ -966,7 +966,7 @@ tab('home');
  function notice(){const d=v16DaysSinceLaunch(),alert=get('v16retirealert');if(alert)alert.remove();get('v16retirealertalerts')?.remove();get('v163retiremetro')?.remove();if(d===null||d>=21)return;const date=new Date(new Date(V16_LAUNCH_AT).getTime()+14*86400000).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'long',day:'numeric',year:'numeric'});const el=document.createElement('div');el.id='v16retirealert';el.className='v16notice';el.innerHTML=`<b>⚠ C29X service change</b><p>Effective ${h(date)}, C29X will no longer be in service. To continue your trip, please use C29 or free CITYBUS 35.${d>=14?' <b>No Longer in Service.</b>':''}</p>`;home.prepend(el);const metroCopy=el.cloneNode(true);metroCopy.id='v163retiremetro';get('v163retiremetro')?.remove();get('workAlert').insertAdjacentElement('afterend',metroCopy);const alertPage=get('v135alerts');if(alertPage){const copy=el.cloneNode(true);copy.id='v16retirealertalerts';alertPage.prepend(copy)}}
  notice();
  // Distinguish operator on detail panel, without changing underlying stop data.
- const observer=new MutationObserver(()=>{const overlay=get('detailsOverlay');if(overlay.hidden)return;const title=get('detailsTitle')?.textContent||'';const id=title.match(/\b(30|31|34|35|40|41|42|807|808|810|C29X)\b/)?.[1];const l=L.find(x=>x.id===id);if(!l)return;let note=get('v16detailnote');if(!note){note=document.createElement('div');note.id='v16detailnote';note.className='v16notice';get('detailsBody').prepend(note)}note.textContent=l.mode==='CITYBUS'?'CITYBUS · FREE · 24/7':l.mode==='Commuter'?'Commuter bus · sky blue':id==='C29X'?'C29X · service changes October 31, 2026':' ';});
+ const observer=new MutationObserver(()=>{const overlay=get('detailsOverlay');if(overlay.hidden)return;const title=get('detailsTitle')?.textContent||'';const id=title.match(/\b(30|31|34|35|40|41|42|807|808|810|C29X)\b/)?.[1];const l=L.find(x=>x.id===id);if(!l)return;let note=get('v16detailnote');if(!note){note=document.createElement('div');note.id='v16detailnote';note.className='v16notice';get('detailsBody').prepend(note)}if(l.mode==='Commuter'){note.remove();return;}note.textContent=l.mode==='CITYBUS'?'CITYBUS · FREE · 24/7':id==='C29X'?'C29X · service changes October 31, 2026':'';if(!note.textContent)note.remove();});
  observer.observe(get('detailsOverlay'),{attributes:true,childList:true,subtree:false});
 })();
 </script>
