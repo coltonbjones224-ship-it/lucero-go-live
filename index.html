@@ -499,8 +499,16 @@ function departures(l,stop,dir,clock){
  arr.forEach(a=>{if(a.dest==='South Lucero Transit Center')a.dest='South Lucero';if(a.dest==='Rustad Station')a.dest='Rustad';});
  return arr.sort((a,b)=>a.eta-b.eta).slice(0,4);
 }
-const axes={C5:'WE',C11:'WE',C15:'SN',C19:'NS',E12:'WE',E16:'WE',U23:'SN',R61:'SN',W48:'SN',W46:'SN',W45:'WE',W43:'SN',S32:'NS',X6:'EW',D22:'EW',C1:'WE',C1X:'WE',C3:'NS',X2:'NS',X3:'EW',X7:'NS',U20:'NS',D8:'EW',D10:'NS','Yellow Shuttle':'EW',D2:'EW',U21:'NS',S33:'SN',D18:'EW',D20:'EW',D14:'EW',D16:'SN',D16X:'SN',C7:'EW',C9:'EW',C29X:'EW',Yellow:'EW',Pink:'NS',Purple:'NS',Green:'NS',Red:'EW',Orange:'EW','Southside Shuttle':'SN','2':'EW',A:'EW',S:'EW',P:'NS',C:'EW',D4:'NS',D6:'NS',S34:'SN',C13:'SN',C29:'EW',D12:'EW',U22:'SN',40:'NS',41:'NS',42:'SN',808:'EW',810:'EW'};
-function directionName(l,dir){if(l.id==='D2')return dir===0?'Clockwise':'Counterclockwise';const pair=axes[l.id]||'WE';const names={N:'Northbound',S:'Southbound',E:'Eastbound',W:'Westbound'};return names[pair[dir]];}
+const axes={C5:'EW',C11:'EW',C15:'NS',C19:'SN',E12:'EW',E16:'EW',U23:'NS',R61:'SN',W48:'NS',W46:'SN',W45:'WE',W43:'SN',S32:'SN',X6:'EW',D22:'EW',C1:'EW',C1X:'EW',C3:'SN',X2:'NS',X3:'EW',X7:'NS',U20:'NS',D8:'EW',D10:'NS','Yellow Shuttle':'EW',D2:'EW',U21:'NS',S33:'SN',D18:'EW',D20:'EW',D14:'EW',D16:'SN',D16X:'SN',C7:'EW',C9:'EW',C29X:'EW',Yellow:'EW',Pink:'NS',Purple:'NS',Green:'NS',Red:'EW',Orange:'EW','Southside Shuttle':'SN','2':'EW',A:'EW',S:'EW',P:'NS',C:'EW',D4:'NS',D6:'NS',S34:'SN',C13:'SN',C29:'EW',D12:'EW',U22:'SN',40:'NS',41:'NS',42:'SN',808:'EW',810:'EW'};
+// v16.2.9.2: Route direction labels are explicitly tied to the direction-0
+// first-to-last stop sequence. Direction 1 is the reverse sequence.
+// Do not infer a direction from the location or alphabetical order of a stop.
+function directionName(l,dir){
+ if(l.id==='D2')return dir===0?'Clockwise':'Counterclockwise';
+ const pair=axes[l.id]||'WE';
+ const names={N:'Northbound',S:'Southbound',E:'Eastbound',W:'Westbound'};
+ return names[pair[dir]];
+}
 function stopOptions(l,station,t=clockNow().min){
  // Weekend construction: Yellow trains do not serve Business Square, Government Center or Montclair.
  if(l.id==='Yellow'&&weekendTrackWorkActive()&&['Business Square','Government Center','Montclair'].includes(station))return [];
@@ -798,7 +806,7 @@ function paintStop(){
   const code=makeEl('span','stop-service-code');code.style.color=l.color;addRouteMark(code,l,'small');
   const info=makeEl('span','stop-service-info');
   info.append(makeEl('strong','',l.mode));
-  const ends=(BUS_EXPRESS[l.id]||BUS_EXPRESS[l.id]||BUS_V11[l.id]||BUS_V10[l.id])?[(BUS_EXPRESS[l.id]||BUS_EXPRESS[l.id]||BUS_V11[l.id]||BUS_V10[l.id])[0][0],(BUS_EXPRESS[l.id]||BUS_EXPRESS[l.id]||BUS_V11[l.id]||BUS_V10[l.id])[0].at(-1)]:[l.stops[0],l.stops.at(-1)];
+  const currentStops=routeStops(l,clock.min,0);const ends=[currentStops[0],currentStops.at(-1)];
   const dests=[...new Set(ends)].join(' ↔ ');
   info.append(makeEl('small','',dests));
   if(l.always)info.append(makeEl('small','','24/7'));
@@ -810,7 +818,11 @@ function paintStop(){
     const names=(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,clock.min,d):(d===0?routeStops(l,clock.min):[...routeStops(l,clock.min)].reverse());
     return names.some(n=>stationForStop(n)===hub||n===stop);
    });
-   detailDir=dirs[0]??0;
+   detailDir=dirs.find(d=>{
+    const base=routeStops(l,clock.min,d);
+    const seq=(BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?base:(d===0?base:[...base].reverse());
+    return seq.some((n,i)=>i<seq.length-1&&(stationForStop(n)===hub||n===stop));
+   })??dirs[0]??0;
    detailStop=null;
    // The main station selector remains unchanged; route details are shown for the tapped stop.
    detailBoardingStop=stop;
