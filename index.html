@@ -39,6 +39,7 @@
 .affected-trips{border-top:1px solid #66543b;margin-top:10px;padding-top:10px}
 .affected-trip{display:flex;justify-content:space-between;gap:10px;margin-top:9px;font-size:12px}
 .affected-trip b{color:#ffd16d;white-space:nowrap}
+.v174-walk{font-size:.85rem;opacity:.85;margin-top:.3rem}.v174-walk-detail{padding:12px 14px;border-radius:10px;background:#233a45;color:#e3f4ff;margin:12px 0}.v174-mini-slot{margin-bottom:12px}
 </style><style>.go-nav{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-top:13px}.go-nav span{font-size:11px;color:#a7bed0}.go-nav button,.go-track{background:#e8662e;border:0;color:white;font-weight:800;padding:12px;border-radius:11px}.go-route{padding:16px;background:#49171b;border-radius:15px;margin:18px 0}.go-route h3{margin:0 0 8px}.go-route button{display:block;margin:12px 0 0;width:100%;text-align:center}.go-rank{padding:13px 5px;border-bottom:1px solid #814047;display:flex;justify-content:space-between;gap:8px;font-size:13px}.go-rank b{color:#ffcb97}.go-buttons{display:flex;gap:5px;margin:10px 0;flex-wrap:wrap}.go-buttons button{font-size:12px;background:#57252a;border-color:#86414a}.go-buttons button.on{background:#e8662e;border-color:#e8662e}.tracker-overlay{position:fixed;inset:0;z-index:40;background:#10151b;display:flex;flex-direction:column}.tracker-overlay[hidden]{display:none}.tracker-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#1c2935}.tracker-overlay iframe{border:0;width:100%;flex:1;background:#10151b}.v135badge{border:0;cursor:pointer}.v135badge:focus-visible{outline:2px solid white}.go-route{background:#20374a;border:1px solid #3c5a70}.go-route h3{color:#f3f7fc}</style><style>
 /* v16.1 CITYBUS identity */
 .v161logo{display:inline-flex;align-items:center;white-space:nowrap;background:#ffc619;border-radius:9px;transform:skew(-9deg);padding:5px 10px;font-size:19px;font-weight:1000;letter-spacing:-1.4px;line-height:1.1;vertical-align:middle;margin-right:8px;box-shadow:inset 0 -2px 0 #e4a700}
@@ -527,7 +528,7 @@ const axes={C5:'EW',C11:'EW',C15:'NS',C19:'SN',E12:'EW',E16:'EW',U23:'NS',R61:'N
 // first-to-last stop sequence. Direction 1 is the reverse sequence.
 // Do not infer a direction from the location or alphabetical order of a stop.
 function v17Destination(l,dir,fallback){
- const signs={C9:['University of Lucero','Stadium Hall'],D10:['Franklin Square','University of Lucero'],W46:['Young University','Castle Rock'],W43:['South Lucero','Dysart'],R61:['Castle Rock','Dysart'],W45:['C Street - Ox Town','Golden Coast']};
+ const signs={C9:['University of Lucero','Stadium Hall'],D10:['Franklin Square','University of Lucero'],W48:['Young University','Drybury'],W46:['Young University','Castle Rock'],W43:['South Lucero','Dysart'],R61:['Castle Rock','Dysart'],W45:['C Street - Ox Town','Golden Coast']};
  return signs[l.id]?.[dir]||fallback;
 }
 function directionName(l,dir){
@@ -536,11 +537,21 @@ function directionName(l,dir){
  const names={N:'Northbound',S:'Southbound',E:'Eastbound',W:'Westbound'};
  return names[pair[dir]];
 }
+function v174Walking(l,station,t){
+ const stops=[...new Set([...routeStops(l,t,0),...routeStops(l,t,1)])];
+ const rules=[];
+ if(l.id==='C9'&&station==='Dames Street')rules.push({stop:'Richard Court & Dames Street',minutes:2});
+ if(l.id==='C9'&&station==='Del Toro - Falmouth Square')rules.push({stop:'Richard Avenue & Corterra Avenue',minutes:4});
+ if(station==='University of Lucero')rules.push({stop:'University Street & Post Street',minutes:2});
+ return rules.filter(r=>stops.some(x=>v172SameStop(x,r.stop))).map(r=>({...r,stop:stops.find(x=>v172SameStop(x,r.stop))}));
+}
+function v174WalkingFor(l,station,t){return v174Walking(l,station,t).sort((a,b)=>a.minutes-b.minutes)[0]||null;}
 function stopOptions(l,station,t=clockNow().min){
  // Weekend construction: Yellow trains do not serve Business Square, Government Center or Montclair.
  if(l.id==='Yellow'&&weekendTrackWorkActive()&&['Business Square','Government Center','Montclair'].includes(station))return [];
  if(l.id==='S'&&station&&clockNow().date>='2026-10-24'&&clockNow().date<'2027-01-24')return [];
  if(l.id==='W48'&&station==='Gage Gehris - Young University')return [];
+ const walk=v174WalkingFor(l,station,t);
  if(l.id==='U23'&&station==='Therman')return [];
  if(l.id==='W45'&&station==='West End')return [];
  if(l.id==='C5'&&station==='Cascades')return [];
@@ -570,7 +581,7 @@ function stopOptions(l,station,t=clockNow().min){
    'Cascades':['Cascades'],
    'Culbreth':['Culbreth','Culbreth Station Bay A'],
    'Joseph Square - NLCC - Law Center':['Joseph Square - NLCC - Law Center','Joseph Square Metro Station (East)','Joseph Square Metro Station (West)'],
-   'Del Toro - Falmouth Square':['Del Toro - Falmouth Square','Stadium Hall'],
+   'Del Toro - Falmouth Square':['Del Toro - Falmouth Square'],
    'Dames Street':['Dames Street','Dames Street Metro'],
    'Central Hospital':['Central Hospital Metro Bay A'],
    'Freedom Stadium':['Freedom Stadium','Freedom Stadium Metro','8th Street - Park Avenue'],
@@ -581,17 +592,17 @@ function stopOptions(l,station,t=clockNow().min){
    'D2':{'Bing Center - Cordan Street':['Park Avenue & 27th Street'],'8th Street - Park Avenue':['Park Avenue & Walker Road'],'Central Hospital':['Old Town Road & Cordan Street'],'Montclair':['Montclair Metro']},
    'D4':{'Freedom Stadium':['Freedom Stadium Metro']},
    'D6':{'Freedom Stadium':['Freedom Stadium Metro']},
-   'C9':{'Dames Street':['Richard Avenue & Post Street']},
+   'C9':{},
    '34':{'Southcity Crossing':['Southcity Crossing']}
   };
   if(station==='Freedom Stadium'&&l.id==='D18')return [];
   if(station==='Dames Street'&&['D18','C7'].includes(l.id))return [];
   if(['C9','D10'].includes(l.id)&&['Freedom Stadium','University of Lucero'].includes(station))return (aliases[station]||[]).filter(x=>valid.has(x));
   const custom=v167Connections[l.id]?.[station];
-  if(custom){const valid=new Set([...routeStops(l,t,0),...routeStops(l,t,1)]);return custom.filter(x=>valid.has(x));}
-  const nearbyV11=(l.id==='C9'&&['Del Toro - Falmouth Square','Dames Street'].includes(station))?['Richard Avenue & Post Street']:
+  if(custom&&custom.length){const valid=new Set([...routeStops(l,t,0),...routeStops(l,t,1)]);return custom.filter(x=>valid.has(x));}
+  const nearbyV11=(l.id==='C9'&&station==='Dames Street')?['Richard Court & Dames Street']:(l.id==='C9'&&station==='Del Toro - Falmouth Square')?['Richard Avenue & Corterra Avenue']:
     (l.id==='D2'&&['Central Hospital','Freedom Stadium'].includes(station))?['8th Street - Park Avenue']:[];
-  return [...new Set([...(aliases[station]||[]),...nearbyV11,station])].filter(x=>valid.has(x));
+  return [...new Set([...(aliases[station]||[]),...nearbyV11,station,...(walk?[walk.stop]:[])])].filter(x=>valid.has(x));
  }
  if(station==='Dames Street'&&['D18','C7'].includes(l.id))return [];
  if(l.id==='D2'&&station==='Bing Center - Cordan Street')return ['Park Avenue & 27th Street'];
@@ -604,10 +615,11 @@ function stopOptions(l,station,t=clockNow().min){
   const calls=l.stops.filter(x=>shared.includes(x));
   return calls.length?calls:[];
  }
- return l.stops.includes(station)?[station]:[];
+ return l.stops.includes(station)?[station]:(walk?[walk.stop]:[]);
 }
 
 function isDirectService(l,station,t){
+ if(v174WalkingFor(l,station,t)&&!([...routeStops(l,t,0),...routeStops(l,t,1)].some(x=>x===station||stationForStop(x)===station)))return false;
  if(l.id==='Yellow'&&weekendTrackWorkActive()&&['Business Square','Government Center','Montclair'].includes(station))return false;
 
  if(l.id==='D2'&&['Bing Center - Cordan Street','8th Street - Park Avenue','Central Hospital'].includes(station))return false;
@@ -643,9 +655,9 @@ function createCard(e,inactive=false){
  const left=document.createElement('div'),id=document.createElement('div');id.className='id';addRouteMark(id,e.l,'');
  if(e.l.always){const badge=document.createElement('span');badge.className='always';badge.textContent='24/7';id.append(badge);}
  if(false&&e.l.new&&e.coming){const badge=document.createElement('span');badge.className='always coming';badge.textContent='STARTS MON OCT 19';id.append(badge);}
- const dest=document.createElement('div');dest.className='dest';dest.textContent='➜ '+publicDestination(first?.dest||v17Destination(e.l,chosen.dir,chosen.dest));
+ const dest=document.createElement('div');dest.className='dest';dest.textContent='➜ '+publicDestination(e.l.id==='Yellow'?first?.dest||chosen.dest:v17Destination(e.l,chosen.dir,chosen.dest));
  const via=document.createElement('div');via.className='via';via.textContent=directionName(e.l,chosen.dir)+' · '+e.l.mode+(e.l.via&&e.l.id!=='X6'?' · '+(/^(Limited Stop|Rush Only|Downtown circulator)/i.test(e.l.via)?e.l.via:'Via '+e.l.via):'');
- left.append(id,dest,via);
+ left.append(id,dest,via);if(e.nearby){const w=makeEl('div','v174-walk','🚶 Walking connection');left.append(w);}
  const right=document.createElement('div');right.className='eta';
  const big=document.createElement('strong');big.textContent=first?first.eta:(e.coming?'STARTS MON':'NOT IN SERVICE');
  right.append(big);
@@ -702,8 +714,10 @@ function render(){
   const e={l,options,active,arr:chosen.arr,coming:false,nearby:!isDirectService(l,station,clock.min)};
   if(options.some(x=>x.arr.length))activeEntries.push(e);else inactiveEntries.push(e);
  }
- activeEntries.sort((a,b)=>Number(a.nearby)-Number(b.nearby)||a.l.id.localeCompare(b.l.id,undefined,{numeric:true}));
- inactiveEntries.sort((a,b)=>Number(a.nearby)-Number(b.nearby)||a.l.id.localeCompare(b.l.id,undefined,{numeric:true}));
+ const favoriteIds=(()=>{try{return JSON.parse(localStorage.getItem('lucero-v135-favorites')||'{}').routes||[]}catch{return []}})();
+ const rank=e=>favoriteIds.includes(e.l.id)?0:e.nearby?3:['Metro','Light rail'].includes(e.l.mode)?1:2;
+ const order=(a,b)=>rank(a)-rank(b)||(a.nearby&&b.nearby?(v174WalkingFor(a.l,station,clock.min)?.minutes??999)-(v174WalkingFor(b.l,station,clock.min)?.minutes??999):0)||a.l.id.localeCompare(b.l.id,undefined,{numeric:true});
+ activeEntries.sort(order);inactiveEntries.sort(order);
  $('count').textContent=activeEntries.length+' active lines · '+'swipe to change direction';
  const parent=$('routes');parent.replaceChildren();
  if(!activeEntries.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='No upcoming departures at this station right now.';parent.append(empty);}
@@ -844,34 +858,41 @@ function paintStop(){
  }
  services.sort((a,b)=>(a.arr[0]?.eta??9999)-(b.arr[0]?.eta??9999)||a.l.id.localeCompare(b.l.id,undefined,{numeric:true}));
  if(!services.length)body.append(makeEl('p','sheet-muted','No routes are listed at this exact stop.'));
- let currentService=0;
  const stage=makeEl('div','v173-service-stage');body.append(stage);
- function drawService(){
-  stage.replaceChildren();if(!services.length)return;
-  const entry=services[currentService],{l,dir,boarding,arr}=entry;
-  const card=makeEl('section','v172-mini-card');card.style.setProperty('--route',l.color);
-  const top=makeEl('div','v172-mini-top');
-  const route=makeEl('strong','v172-mini-code',l.id);route.style.color=l.color;
-  const info=makeEl('div','v172-mini-info');
-  const dest=arr[0]?.dest||v17Destination(l,dir,v172DirectionalStops(l,dir,clock.min).at(-1));
-  info.append(makeEl('strong','','➜ '+publicDestination(dest)),makeEl('small','',directionName(l,dir)+' · '+l.mode));top.append(route,info);
-  top.append(makeEl('strong','v172-mini-eta',arr.length?(arr[0].dropped?'Skipped':arr[0].eta+' min'):'Not in service'));card.append(top);
-  const times=makeEl('div','v172-mini-times');
-  for(const a of arr.slice(0,3)){const chip=makeEl('span','v172-mini-chip',a.dropped?'Skipped':a.eta+' min');if(a.dropped)chip.style.textDecoration='line-through';times.append(chip);}
-  if(!arr.length)times.append(makeEl('span','v172-mini-muted','No upcoming departures'));card.append(times);
-  const nav=makeEl('div','v173-mini-nav');
-  const prev=makeEl('button','','‹'),next=makeEl('button','','›');
-  const label=makeEl('span','','Swipe for other service · '+(currentService+1)+'/'+services.length);
-  const move=step=>{currentService=(currentService+step+services.length)%services.length;drawService();};
-  prev.onclick=()=>move(-1);next.onclick=()=>move(1);nav.append(prev,label,next);card.append(nav);
-  let touchX=null,touchY=null;
-  card.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;},{passive:true});
-  card.addEventListener('touchend',e=>{if(touchX===null)return;const dx=e.changedTouches[0].clientX-touchX,dy=e.changedTouches[0].clientY-touchY;touchX=null;touchY=null;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.3)move(dx<0?1:-1);},{passive:true});
-  const detail=makeEl('button','v172-mini-route','View '+l.id+' route details ›');
-  detail.onclick=()=>{detailRoute=l;detailDir=dir;detailBoardingStop=boarding;detailStop=null;paintDetails();};
-  card.append(detail);stage.append(card);
+ const routeGroups=new Map();
+ for(const entry of services){if(!routeGroups.has(entry.l.id))routeGroups.set(entry.l.id,[]);routeGroups.get(entry.l.id).push(entry);}
+ for(const entries of routeGroups.values()){
+  entries.sort((a,b)=>a.dir-b.dir);
+  let active=0;
+  const slot=makeEl('div','v174-mini-slot');stage.append(slot);
+  function draw(){
+   slot.replaceChildren();const {l,dir,boarding,arr}=entries[active];
+   const card=makeEl('section','v172-mini-card');card.style.setProperty('--route',l.color);
+   const top=makeEl('div','v172-mini-top');
+   const route=makeEl('strong','v172-mini-code',l.id);route.style.color=l.color;
+   const info=makeEl('div','v172-mini-info');
+   const dest=arr[0]?.dest||v17Destination(l,dir,v172DirectionalStops(l,dir,clock.min).at(-1));
+   info.append(makeEl('strong','','➜ '+publicDestination(l.id==='Yellow'?dest:v17Destination(l,dir,dest))),makeEl('small','',directionName(l,dir)+' · '+l.mode));top.append(route,info);
+   top.append(makeEl('strong','v172-mini-eta',arr.length?(arr[0].dropped?'Skipped':arr[0].eta+' min'):'Not in service'));card.append(top);
+   const times=makeEl('div','v172-mini-times');
+   for(const a of arr.slice(0,3)){const chip=makeEl('span','v172-mini-chip',a.dropped?'Skipped':a.eta+' min');if(a.dropped)chip.style.textDecoration='line-through';times.append(chip);}
+   if(!arr.length)times.append(makeEl('span','v172-mini-muted','No upcoming departures'));card.append(times);
+   if(entries.length>1){
+    const nav=makeEl('div','v173-mini-nav');const prev=makeEl('button','','‹'),next=makeEl('button','','›');
+    const label=makeEl('span','','Swipe for other destination · '+(active+1)+'/'+entries.length);
+    const move=step=>{active=(active+step+entries.length)%entries.length;draw();};
+    prev.onclick=()=>move(-1);next.onclick=()=>move(1);nav.append(prev,label,next);card.append(nav);
+    let touchX=null,touchY=null;
+    card.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;},{passive:true});
+    card.addEventListener('touchend',e=>{if(touchX===null)return;const dx=e.changedTouches[0].clientX-touchX,dy=e.changedTouches[0].clientY-touchY;touchX=null;touchY=null;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.3)move(dx<0?1:-1);},{passive:true});
+   }
+   const detail=makeEl('button','v172-mini-route','View '+l.id+' route details ›');
+   detail.onclick=()=>{detailRoute=l;detailDir=dir;detailBoardingStop=boarding;detailStop=null;paintDetails();};
+   card.append(detail);slot.append(card);
+  }
+  draw();
  }
- drawService();
+
 }
 let detailBoardingStop=null;
 function paintDetails(){
@@ -879,13 +900,18 @@ function paintDetails(){
  const clock=clockNow(),dir=detailDir,base=routeStops(l,clock.min,dir);
  const stops=(l.id==='C9'||l.id==='D10'||BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?base:(dir===0?base:[...base].reverse());
  const destination=stops.at(-1);
+ const v174Selected=detailBoardingStop?stationForStop(detailBoardingStop):select.value;
+ const v174Near=stopOptions(l,v174Selected,clock.min).filter(x=>stops.includes(x));
+ const v174Board=v174Near.find(x=>stops.indexOf(x)<stops.length-1)||stops.find((x,i)=>i<stops.length-1);
+ const v174First=l.id==='Yellow'&&v174Board?departures(l,v174Board,dir,clock)[0]:null;
+ const v174Dest=l.id==='Yellow'&&v174First?v174First.dest:v17Destination(l,dir,destination);
  const body=$('detailsBody');body.replaceChildren();
  $('detailsTitle').textContent=l.id;
- $('detailsSub').textContent=directionName(l,dir)+' · '+publicDestination(v17Destination(l,dir,destination));
+ $('detailsSub').textContent=directionName(l,dir)+' · '+publicDestination(v174Dest);
  const hero=makeEl('div','departure-hero');hero.style.setProperty('--route',l.color);
  const heroCode=makeEl('div','departure-code');if(l.mode==='Commuter')heroCode.classList.add('v163commuterhero');addRouteMark(heroCode,l,'large');if(l.mode==='CITYBUS'){heroCode.classList.add('v161citynumber');const brand=makeEl('span','v161logo');brand.innerHTML='<i>CITY</i><em>BUS</em>';heroCode.append(brand)}hero.append(heroCode);
  hero.append(makeEl('div','departure-heading','➜ '+directionName(l,dir).replace('bound','')));
- hero.append(makeEl('div','departure-destination',publicDestination(v17Destination(l,dir,destination))));
+ hero.append(makeEl('div','departure-destination',publicDestination(v174Dest)));
  if(l.via && !['X7','X6'].includes(l.id))hero.append(makeEl('div','departure-via',/^(Limited Stop|Rush Only|Downtown circulator)/i.test(l.via)?l.via:'Via '+l.via));
  const badges=makeEl('div','departure-badges');
  if(l.always)badges.append(makeEl('span','','24/7'));if(l.mode==='CITYBUS'){const free=makeEl('span','v161free','🚌 FREE');badges.append(free)}
@@ -915,9 +941,11 @@ function paintDetails(){
  let touchStartX=null,touchStartY=null;
  chooser.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;},{passive:true});
  chooser.addEventListener('touchend',e=>{if(touchStartX===null)return;const dx=e.changedTouches[0].clientX-touchStartX,dy=e.changedTouches[0].clientY-touchStartY;touchStartX=null;touchStartY=null;if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)*1.2){detailDir=1-detailDir;paintDetails();}},{passive:true});
- const selected=detailBoardingStop?stationForStop(detailBoardingStop):select.value;
- const near=stopOptions(l,selected,clock.min).filter(x=>stops.includes(x));
+ const selected=v174Selected;
+ const near=v174Near;
  const boarding=near.find(x=>stops.indexOf(x)<stops.length-1)||stops.find((x,i)=>i<stops.length-1&&serviceWindow(l,clock,dir));
+ const walking=v174WalkingFor(l,selected,clock.min);
+ if(walking&&boarding===walking.stop){body.append(makeEl('div','v174-walk-detail','🚶 '+walking.minutes+' minute walk from '+selected+' to '+walking.stop));}
  body.append(makeEl('div','departure-location',boarding?'Departures at '+boarding:'No boarding stop in this direction at '+selected));
  const arr=boarding?departureBoard(l,boarding,dir,clock):[];
  if(!arr.length){
