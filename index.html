@@ -73,7 +73,7 @@ body.v135-metro main{display:block!important}body.v135-metro .v135page{display:n
 #v17poll[hidden]{display:none!important}body.v17-poll-open{overflow:hidden!important}
 #v17pollclose{position:sticky;top:0;float:right;z-index:2;background:#b94e28;color:white;border:0;border-radius:12px;padding:13px 18px;font-weight:800;min-height:48px}
 .v135nav>div{justify-content:space-around}.v135nav button{flex:1}
-</style><style id="v172-mini-style">
+</style><style id="v173-mini-style">.v173-mini-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0}.v173-mini-nav button{border:1px solid #aa6033;border-radius:10px;background:#57301a;color:#ffd3b0;font-size:28px;min-width:48px;min-height:44px}.v173-mini-nav span{font-size:13px;text-align:center;color:#eac2a7}</style><style id="v172-mini-style">
 .v172-mini-head{padding:16px 4px 18px}.v172-mini-head h2{margin:12px 0 5px;font-size:1.35rem}.v172-mini-close{background:#22374b;color:white;border:1px solid #597083;border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer}.v172-mini-card{background:#351d10;border-left:4px solid var(--route,#ff852e);border-radius:12px;padding:15px;margin:12px 0;color:#f6c3a3}.v172-mini-top{display:flex;align-items:flex-start;gap:12px}.v172-mini-code{font-size:2rem;min-width:64px}.v172-mini-info{flex:1;display:flex;flex-direction:column;gap:4px}.v172-mini-info small,.v172-mini-muted{color:#cda98e}.v172-mini-eta{font-size:1.3rem;color:#ff8a35;white-space:nowrap}.v172-mini-times{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.v172-mini-chip{background:#623923;padding:7px 10px;border-radius:9px;font-weight:600}.v172-mini-route{background:transparent;color:#ffad73;border:0;padding:8px 0;cursor:pointer;font-weight:700}
 </style>
 </head><body><main><header><nav><small>LUCERO TRANSIT</small></nav><h1>Nearby departures <span class="tag">◉</span></h1><div class="hint">◉ Updating fictional arrivals · not live GPS</div></header><div id="workAlert" hidden style="display:none"></div><div id="sLineNotice" hidden style="display:none"></div><div class="locator"><label for="station"><b>📍 Your Metro station</b></label><select id="station"></select><div class="hint">Choose a station in Lucero. No phone location is used.</div></div><div class="bar"><span id="clock">Lucero time</span><span id="count">Loading routes…</span></div><section id="routes" class="routes"></section><button id="inactiveToggle" class="inactiveToggle" aria-expanded="false">Show inactive lines ▾</button><section id="inactive" class="routes inactive" hidden></section><div class="footer">All times are fictional, deterministic predictions based on provisional schedules, not real vehicle GPS. Station lists reflect your updated line-by-line service information. Transfer grouping is shown for nearby Del Toro, Court Square and Court House. v11: All arrivals and automated delays are fictional estimates, not real-time vehicle data.</div></main><div id="detailsOverlay" class="sheet-backdrop" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Route details" id="detailsSheet"><div class="sheet-header"><div><div class="sheet-muted">LUCERO TRANSIT · ROUTE DETAILS</div><h2 class="sheet-title" id="detailsTitle"></h2><div id="detailsSub" class="sheet-muted"></div></div><button class="sheet-close" id="detailsClose" aria-label="Close route details">×</button></div><div id="detailsBody"></div></section></div>
@@ -417,6 +417,9 @@ function incidentState(){
    const bus=!['Metro','Light rail'].includes(l.mode);
    const reason=overnight&&bus?((h>>>14)%100===0?'Bus Crash':'Roadway Crash'):(h>>>16)%100===0?'Police Investigation':((h>>>19)%400===0?'Object Struck':(bus&&rush&&((h>>>15)%100)<70?'Traffic':pool[(h>>>15)%(pool.length-1)])); // Rare police incidents (~1% of disruptions).
    const affected=related.length?related:[l.id];
+   // Rare rail single-tracking: stable across visitors, limited to a 45-minute window.
+   const railIncident=(l.mode==='Metro'||l.mode==='Light rail')&&incidentHash('single-track|'+bucket+'|'+l.id)%1200===0;
+   if(railIncident){incidents.push({id:'ST-'+bucket+'-'+l.id,segment,mode:l.mode,reason:'Single-tracking',affected:[l.id],minutes:10+(h%11),bothDirections:true,oneDirection:0,skipIndex:-1,offload:(h%4===0)});continue;}
    incidents.push({id:'INC-'+bucket+'-'+incidents.length,segment,mode:l.mode,reason,affected,minutes:overnight&&bus?(reason==='Bus Crash'?0:((h>>>23)%4===0?2:0)):2+(h>>>20)%14,bothDirections:(h>>>6)%10!==0,oneDirection:(h>>>7)%2,skipIndex:(h>>>11)%7});
   }
   data={bucket,incidents};
@@ -504,7 +507,7 @@ function departures(l,stop,dir,clock){
     if(eta>=-.5&&eta<=110){
      // Keep dropped trips in the departure board, visibly crossed out.
      const h=frequency(l,t);
-     arr.push({eta:Math.max(0,Math.ceil(eta)),dest:names.at(-1),last:!l.always&&t+h>=end,dir,short:false,delay:disruption,dropped:!!disruption?.skipped});
+     arr.push({eta:Math.max(0,Math.ceil(eta)),dest:(l.id==='Yellow'&&dir===1&&day.date>='2026-10-19'&&tripIndex%2===1?'Drybury':names.at(-1)),last:!l.always&&t+h>=end,dir,short:false,delay:disruption,dropped:!!disruption?.skipped});
      // Some C29 buses turn at Franklin Square in peak periods, so no eastbound
      // arrival at stops beyond Franklin Square for alternating peak departures.
      if(l.id==='C29'&&day.weekday!=='Sat'&&day.weekday!=='Sun'&&dir===0&&peak(t)&&Math.round((t-start)/h)%2===1&&idx>names.indexOf('Dames Street & N 33rd Street (Franklin Square)'))arr.pop();
@@ -515,8 +518,8 @@ function departures(l,stop,dir,clock){
   }
   }
  }
- if(l.id==='Yellow'&&clock.date>=START_NEW&&dir===1){arr.forEach((a,i)=>{if(i%2===1)a.dest='Drybury';});}
- arr.forEach(a=>{if(l.id==='C9')a.dest=v17Destination(l,dir,a.dest);if(a.dest==='South Lucero Transit Center')a.dest='South Lucero';if(a.dest==='Rustad Station')a.dest='Rustad';});
+ 
+ arr.forEach(a=>{if(l.id==='C9'||l.id==='D10')a.dest=v17Destination(l,dir,a.dest);if(a.dest==='South Lucero Transit Center')a.dest='South Lucero';if(a.dest==='Rustad Station')a.dest='Rustad';});
  return arr.sort((a,b)=>a.eta-b.eta).slice(0,4).map((a,i)=>{if(i>=3&&a.dropped){a.dropped=false;a.delay=null;}return a;});
 }
 const axes={C5:'EW',C11:'EW',C15:'NS',C19:'SN',E12:'EW',E16:'EW',U23:'NS',R61:'NS',W48:'NS',W46:'NS',W45:'EW',W43:'NS',S32:'SN',X6:'EW',D22:'EW',C1:'EW',C1X:'EW',C3:'SN',X2:'NS',X3:'EW',X7:'NS',U20:'NS',D8:'EW',D10:'NS','Yellow Shuttle':'EW',D2:'EW',U21:'NS',S33:'SN',D18:'EW',D20:'EW',D14:'EW',D16:'SN',D16X:'SN',C7:'EW',C9:'EW',C29X:'EW',Yellow:'EW',Pink:'NS',Purple:'NS',Green:'NS',Red:'EW',Orange:'EW','Southside Shuttle':'SN','2':'EW',A:'EW',S:'EW',P:'NS',C:'EW',D4:'NS',D6:'NS',S34:'SN',C13:'SN',C29:'EW',D12:'EW',U22:'SN',40:'NS',41:'NS',42:'SN',808:'EW',810:'EW'};
@@ -617,7 +620,7 @@ function isDirectService(l,station,t){
  const names=[...routeStops(l,t,0),...routeStops(l,t,1)];
  return names.some(n=>stationForStop(n)===station||n===station);
 }
-let directions={},showInactive=false,detailRoute=null,detailDir=0;
+let yellowTripIndex=0;let directions={},showInactive=false,detailRoute=null,detailDir=0;
 $('inactiveToggle').onclick=()=>{showInactive=!showInactive;render();};
 function publicDestination(name){
  const n=String(name);
@@ -635,13 +638,13 @@ function createCard(e,inactive=false){
  const options=e.options;
  const active=options.length===1?options[0].dir:(options.some(x=>x.dir===directions[e.l.id])?directions[e.l.id]:e.active);
  const chosen=options.find(x=>x.dir===active)||options[0];
- const first=chosen.arr[0];
+ const first=e.l.id==='Yellow'&&chosen.dir===1?chosen.arr[Math.min(yellowTripIndex,chosen.arr.length-1)]||chosen.arr[0]:chosen.arr[0];
  const top=document.createElement('div');top.className='top';
  const left=document.createElement('div'),id=document.createElement('div');id.className='id';addRouteMark(id,e.l,'');
  if(e.l.always){const badge=document.createElement('span');badge.className='always';badge.textContent='24/7';id.append(badge);}
  if(false&&e.l.new&&e.coming){const badge=document.createElement('span');badge.className='always coming';badge.textContent='STARTS MON OCT 19';id.append(badge);}
- const dest=document.createElement('div');dest.className='dest';dest.textContent='➜ '+publicDestination(chosen.dest);
- const via=document.createElement('div');via.className='via';via.textContent=directionName(e.l,chosen.dir)+' · '+e.l.mode+(e.l.via?' · '+(/^(Limited Stop|Rush Only|Downtown circulator)/i.test(e.l.via)?e.l.via:'Via '+e.l.via):'')+(chosen.stop!==select.value?' · '+chosen.stop:'');
+ const dest=document.createElement('div');dest.className='dest';dest.textContent='➜ '+publicDestination(first?.dest||v17Destination(e.l,chosen.dir,chosen.dest));
+ const via=document.createElement('div');via.className='via';via.textContent=directionName(e.l,chosen.dir)+' · '+e.l.mode+(e.l.via&&e.l.id!=='X6'?' · '+(/^(Limited Stop|Rush Only|Downtown circulator)/i.test(e.l.via)?e.l.via:'Via '+e.l.via):'');
  left.append(id,dest,via);
  const right=document.createElement('div');right.className='eta';
  const big=document.createElement('strong');big.textContent=first?first.eta:(e.coming?'STARTS MON':'NOT IN SERVICE');
@@ -651,7 +654,7 @@ function createCard(e,inactive=false){
  top.append(left,right);card.append(top);
  if(first){
   const next=document.createElement('div');next.className='next';
-  for(const a of chosen.arr.slice(0,3)){
+  for(const a of (e.l.id==='Yellow'&&chosen.dir===1?chosen.arr.slice(yellowTripIndex,yellowTripIndex+3):chosen.arr.slice(0,3))){
    const pill=document.createElement('span');pill.className='pill';pill.textContent=a.dropped?'DROPPED · '+a.eta+' min':a.eta+' min'+(a.eta<=60?' · ◉':' · scheduled');if(a.dropped)pill.style.textDecoration='line-through';pill.title=a.eta<=60?'Updating simulated arrival estimate':'Scheduled time';next.append(pill);
    if(a.short){const short=document.createElement('span');short.className='pill';short.textContent='SHORT TURN';next.append(short);}
    if(a.last&&!e.l.always){const badge=document.createElement('span');badge.className='pill last';badge.textContent='LAST';next.append(badge);}
@@ -666,7 +669,7 @@ function createCard(e,inactive=false){
   const prev=document.createElement('button');prev.textContent='‹';prev.setAttribute('aria-label','Previous destination for '+e.l.id);
   const note=document.createElement('span');note.textContent='↔ Swipe for other destination · '+(active===0?'1':'2')+'/2';
   const following=document.createElement('button');following.textContent='›';following.setAttribute('aria-label','Next destination for '+e.l.id);
-  const switchDirection=()=>{directions[e.l.id]=options.find(x=>x.dir!==active).dir;render();};
+  const switchDirection=()=>{if(e.l.id==='Yellow'&&active===1&&yellowTripIndex<chosen.arr.length-1){yellowTripIndex++;}else{yellowTripIndex=0;directions[e.l.id]=options.find(x=>x.dir!==active).dir;}render();};
   prev.onclick=ev=>{ev.stopPropagation();switchDirection();};following.onclick=ev=>{ev.stopPropagation();switchDirection();};direction.append(prev,note,following);card.append(direction);
   let touchX=null,touchY=null;
   card.addEventListener('touchstart',ev=>{touchX=ev.touches[0].clientX;touchY=ev.touches[0].clientY;},{passive:true});
@@ -690,7 +693,7 @@ function render(){
    const variants=possibilities.map(stop=>({stop,arr:departures(l,stop,dir,clock)}));
    variants.sort((a,b)=>(a.arr[0]?.eta??Infinity)-(b.arr[0]?.eta??Infinity));
    const best=variants[0],dest=(l.id==='C9'||l.id==='D10'||BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,clock.min,dir).at(-1):(dir===0?routeStops(l,clock.min).at(-1):l.stops[0]);
-   options.push({dir,arr:best.arr,dest,stop:best.stop});
+   options.push({dir,arr:best.arr,dest:v17Destination(l,dir,best.arr[0]?.dest||dest),stop:best.stop});
   }
   if(!options.length)continue;
   const remembered=directions[l.id];
@@ -729,7 +732,7 @@ function routeNotes(l){
  C29:['24/7. Peak: every 10 minutes; off-peak: every 15 minutes; midnight–4:30 AM: every 20 minutes.','Some peak buses turn at Franklin Square instead of Culbreth. Serves North Lucero High School.'],
  D12:['Eastbound first/last: 6:15 AM / 9:15 PM. Westbound first/last: 5:55 AM / 9:35 PM.','Every 20 minutes at peak and every 30 minutes off-peak. Via 18th Street.'],
  U22:['Weekdays only. Southbound toward Stadium Hall: 5:00–9:30 AM. Northbound toward Manassas State: 3:00–9:00 PM.','Every 20 minutes in the peak direction. Only Stadium Hall and Manassas State are listed as station stops.'],
- Yellow:['24/7. Extended eastbound to Montclair after midnight.','Oct 16–19: weekend track work at Business Square. Trains only between Gage Gehris–Young University and Lucero Convention Center–McNee, every 15 minutes. Alert expires Monday Oct 19 at 4:30 AM.','Starting Monday Oct 19, westbound trains alternate Gage Gehris–Young University and Drybury destinations, branching at Castle Rock (no intermediate stops).'],
+ Yellow:['24/7 service, with overnight trains extending to Montclair.'],
  Green:['24/7 service.'],
  'Southside Shuttle':['24/7 service.'],
  S:['22nd Street is eastbound-only.'],
@@ -825,7 +828,7 @@ function paintStop(){
  const head=makeEl('section','v172-mini-head');
  const back=makeEl('button','v172-mini-close','✕ Close · Back to route');
  back.onclick=()=>{detailStop=null;paintDetails();};
- head.append(back,makeEl('h2','',stop),makeEl('p','sheet-muted','Mini Your Metro · Fictional predicted departures'));
+ head.append(back,makeEl('h2','',stop),makeEl('p','sheet-muted','Simulated stop departures'));
  body.append(head);
  const services=[];
  for(const l of L){
@@ -841,30 +844,34 @@ function paintStop(){
  }
  services.sort((a,b)=>(a.arr[0]?.eta??9999)-(b.arr[0]?.eta??9999)||a.l.id.localeCompare(b.l.id,undefined,{numeric:true}));
  if(!services.length)body.append(makeEl('p','sheet-muted','No routes are listed at this exact stop.'));
- for(const entry of services){
-  const {l,dir,boarding,arr}=entry;
+ let currentService=0;
+ const stage=makeEl('div','v173-service-stage');body.append(stage);
+ function drawService(){
+  stage.replaceChildren();if(!services.length)return;
+  const entry=services[currentService],{l,dir,boarding,arr}=entry;
   const card=makeEl('section','v172-mini-card');card.style.setProperty('--route',l.color);
   const top=makeEl('div','v172-mini-top');
   const route=makeEl('strong','v172-mini-code',l.id);route.style.color=l.color;
   const info=makeEl('div','v172-mini-info');
-  const dest=v17Destination(l,dir,v172DirectionalStops(l,dir,clock.min).at(-1));
-  info.append(makeEl('strong','','➜ '+publicDestination(dest)),makeEl('small','',directionName(l,dir)+' · '+l.mode));
-  top.append(route,info);
-  if(arr.length)top.append(makeEl('strong','v172-mini-eta',arr[0].dropped?'Skipped':arr[0].eta+' min'));
-  else top.append(makeEl('span','v172-mini-muted','Not in service'));
-  card.append(top);
+  const dest=arr[0]?.dest||v17Destination(l,dir,v172DirectionalStops(l,dir,clock.min).at(-1));
+  info.append(makeEl('strong','','➜ '+publicDestination(dest)),makeEl('small','',directionName(l,dir)+' · '+l.mode));top.append(route,info);
+  top.append(makeEl('strong','v172-mini-eta',arr.length?(arr[0].dropped?'Skipped':arr[0].eta+' min'):'Not in service'));card.append(top);
   const times=makeEl('div','v172-mini-times');
-  for(const a of arr.slice(0,3)){
-   const chip=makeEl('span','v172-mini-chip',a.dropped?'Skipped':a.eta+' min');
-   if(a.dropped)chip.style.textDecoration='line-through';
-   times.append(chip);
-  }
-  if(!arr.length)times.append(makeEl('span','v172-mini-muted','No upcoming departures'));
-  card.append(times);
+  for(const a of arr.slice(0,3)){const chip=makeEl('span','v172-mini-chip',a.dropped?'Skipped':a.eta+' min');if(a.dropped)chip.style.textDecoration='line-through';times.append(chip);}
+  if(!arr.length)times.append(makeEl('span','v172-mini-muted','No upcoming departures'));card.append(times);
+  const nav=makeEl('div','v173-mini-nav');
+  const prev=makeEl('button','','‹'),next=makeEl('button','','›');
+  const label=makeEl('span','','Swipe for other service · '+(currentService+1)+'/'+services.length);
+  const move=step=>{currentService=(currentService+step+services.length)%services.length;drawService();};
+  prev.onclick=()=>move(-1);next.onclick=()=>move(1);nav.append(prev,label,next);card.append(nav);
+  let touchX=null,touchY=null;
+  card.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;},{passive:true});
+  card.addEventListener('touchend',e=>{if(touchX===null)return;const dx=e.changedTouches[0].clientX-touchX,dy=e.changedTouches[0].clientY-touchY;touchX=null;touchY=null;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.3)move(dx<0?1:-1);},{passive:true});
   const detail=makeEl('button','v172-mini-route','View '+l.id+' route details ›');
   detail.onclick=()=>{detailRoute=l;detailDir=dir;detailBoardingStop=boarding;detailStop=null;paintDetails();};
-  card.append(detail);body.append(card);
+  card.append(detail);stage.append(card);
  }
+ drawService();
 }
 let detailBoardingStop=null;
 function paintDetails(){
@@ -886,7 +893,7 @@ function paintDetails(){
  if(badges.childNodes.length)hero.append(badges);
  // Active notices appear at the top of the route details only.
  const activeEvents=incidentsFor(l.id,dir);
- const plannedWork=['Yellow','Red','Pink'].includes(l.id)&&weekendTrackWorkActive();
+ const plannedWork=false;
  const retirement=false&&l.id==='C29X'&&v16DaysSinceLaunch()!==null&&v16DaysSinceLaunch()<21;
  if(plannedWork||retirement||activeEvents.length){
   const panel=makeEl('section','disruption-panel v163topalert');
@@ -950,7 +957,7 @@ function paintDetails(){
  freq.append(makeEl('p','sheet-muted',(l.always?'24-hour service':window?'Approximate hours: '+formatMin(window[0])+'–'+formatMin(window[1]):'No service today')+' · Frequency varies by time of day.'));
  for(const note of notes)freq.append(makeEl('div','sheet-note',note));
  if(l.mode==='Bus'&&stops.length){const terminal=stops[0];const next=departureBoard(l,terminal,dir,clock,1)[0];freq.append(makeEl('div','sheet-note',next?'At '+terminal+': next bus departs in '+Math.ceil(next.absolute)+' min (scheduled terminal layover possible).':'At '+terminal+': no upcoming scheduled departure.'));}
- if(l.id==='Yellow')freq.append(makeEl('div','sheet-note','Yellow extends to Montclair after midnight.'));
+ 
  extra.append(freq);
  const stopSection=makeEl('section','sheet-section');stopSection.append(makeEl('h3','','All stops · '+directionName(l,dir)));
  const timeline=makeEl('div','');timeline.style.setProperty('--line',l.color);
@@ -1010,10 +1017,10 @@ function toggle(type,id){let list=favorites[type],i=list.indexOf(id);if(i>=0)lis
 function tab(name){currentTab=name;document.body.className=document.body.className.replace(/\bv135-(home|metro|alerts|go)\b/g,'').trim();document.body.classList.add('v135-'+name);document.querySelectorAll('.v135nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='home')home();if(name==='metro')board();if(name==='alerts')alerts();window.scrollTo(0,0)}
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.tab)));
 function home(){let fs=v('v135favstations'),fr=v('v135favroutes');fs.innerHTML=favorites.stations.length?favorites.stations.map(s=>`<div class="v135row"><button data-station="${esc(s)}">${esc(s)} →</button><button data-unfav-station="${esc(s)}" aria-label="Remove favorite">★</button></div>`).join(''):'<p class="v135muted">No saved stations yet.</p>';fr.innerHTML=favorites.routes.length?favorites.routes.map(id=>`<div class="v135row"><button data-route="${esc(id)}">${esc(id)} →</button><button data-unfav-route="${esc(id)}" aria-label="Remove favorite">★</button></div>`).join(''):'<p class="v135muted">No saved routes yet.</p>';fs.querySelectorAll('[data-station]').forEach(b=>b.onclick=()=>{select.value=b.dataset.station;select.dispatchEvent(new Event('change'));tab('metro')});fs.querySelectorAll('[data-unfav-station]').forEach(b=>b.onclick=()=>toggle('stations',b.dataset.unfavStation));fr.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{tab('metro');let l=L.find(l=>l.id===b.dataset.route);if(l)openDetails(l,0)});fr.querySelectorAll('[data-unfav-route]').forEach(b=>b.onclick=()=>toggle('routes',b.dataset.unfavRoute));let count=incidentState().incidents.length;v('v135overview').innerHTML=`<p>${count?count+' simulated active incident(s)':'No active simulated incidents'} across the network.</p><p class="v135muted">Station and alert times use the same simulated timetable.</p>`}
-function board(){let s=select.value;v17StationNotice(s);v('v135stationstar').textContent=(favorites.stations.includes(s)?'★ Remove favorite':'☆ Favorite')+' · '+publicDestination(s);let rows=[];let clock=clockNow();for(let l of L){let near=stopOptions(l,s,clock.min);if(!near.length||!isDirectService(l,s,clock.min))continue;for(let dir of [0,1]){let possible=near.filter(st=>{let names=(l.id==='C9'||l.id==='D10'||BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,clock.min,dir):(dir===0?routeStops(l,clock.min,dir):[...routeStops(l,clock.min,dir)].reverse());return names.indexOf(st)>=0&&names.indexOf(st)<names.length-1});if(!possible.length)continue;let options=possible.map(st=>({st,arr:departures(l,st,dir,clock)})).filter(x=>x.arr.length).sort((a,b)=>a.arr[0].eta-b.arr[0].eta);if(!options.length)continue;let dest=options[0].arr[0].dest;for(let a of options[0].arr.slice(0,3))rows.push({l,dir,dest,a})}}rows.sort((a,b)=>a.a.eta-b.a.eta||a.l.id.localeCompare(b.l.id));v('v135boardrows').innerHTML=rows.slice(0,25).map(x=>`<div class="v135row"><button class="v135badge ${x.l.mode==='Commuter'?'v161commuterbadge':''}" data-line="${esc(x.l.id)}" data-dir="${x.dir}" style="background:${x.l.mode==='Commuter'?'transparent':esc(x.l.color)}">${esc(x.l.id)}</button><span style="flex:1"><strong>${esc(x.dest)}</strong><br><span class="v135small">${esc(x.l.mode)} · ${x.a.delay?'+'+x.a.delay.minutes+' min · '+esc(x.a.delay.reason):'On time'}${x.a.skipped?' · Trip skipped':''}</span></span><strong>${x.a.skipped?'Skipped':x.a.eta+' min'}</strong></div>`).join('')||'<p class="v135muted">No upcoming departures at this station.</p>';v('v135boardrows').querySelectorAll('[data-line]').forEach(b=>b.onclick=()=>{const l=L.find(l=>l.id===b.dataset.line);if(l)openDetails(l,Number(b.dataset.dir))});}
+function board(){let s=select.value;v17StationNotice(s);v('v135stationstar').textContent=(favorites.stations.includes(s)?'★ Remove favorite':'☆ Favorite')+' · '+publicDestination(s);let rows=[];let clock=clockNow();for(let l of L){let near=stopOptions(l,s,clock.min);if(!near.length||!isDirectService(l,s,clock.min))continue;for(let dir of [0,1]){let possible=near.filter(st=>{let names=(l.id==='C9'||l.id==='D10'||BUS_EXPRESS[l.id]||BUS_STOPS[l.id]||BUS_V10[l.id]||BUS_V11[l.id])?routeStops(l,clock.min,dir):(dir===0?routeStops(l,clock.min,dir):[...routeStops(l,clock.min,dir)].reverse());return names.indexOf(st)>=0&&names.indexOf(st)<names.length-1});if(!possible.length)continue;let options=possible.map(st=>({st,arr:departures(l,st,dir,clock)})).filter(x=>x.arr.length).sort((a,b)=>a.arr[0].eta-b.arr[0].eta);if(!options.length)continue;for(let a of options[0].arr.slice(0,3))rows.push({l,dir,dest:a.dest,a})}}rows.sort((a,b)=>a.a.eta-b.a.eta||a.l.id.localeCompare(b.l.id));v('v135boardrows').innerHTML=rows.slice(0,25).map(x=>`<div class="v135row"><button class="v135badge ${x.l.mode==='Commuter'?'v161commuterbadge':''}" data-line="${esc(x.l.id)}" data-dir="${x.dir}" style="background:${x.l.mode==='Commuter'?'transparent':esc(x.l.color)}">${esc(x.l.id)}</button><span style="flex:1"><strong>${esc(x.dest)}</strong><br><span class="v135small">${esc(x.l.mode)} · ${x.a.delay?'+'+x.a.delay.minutes+' min · '+esc(x.a.delay.reason):'On time'}${x.a.skipped?' · Trip skipped':''}</span></span><strong>${x.a.skipped?'Skipped':x.a.eta+' min'}</strong></div>`).join('')||'<p class="v135muted">No upcoming departures at this station.</p>';v('v135boardrows').querySelectorAll('[data-line]').forEach(b=>b.onclick=()=>{const l=L.find(l=>l.id===b.dataset.line);if(l)openDetails(l,Number(b.dataset.dir))});}
 v('v135stationstar').onclick=()=>toggle('stations',select.value);select.addEventListener('change',board);
 const originalOpen=openDetails;openDetails=function(l,d){originalOpen(l,d);let root=v('sheet');if(!root)root=document.querySelector('.sheet-backdrop:not([hidden]) .sheet');if(!root)return;let prior=root.querySelector('.v135routefav');if(prior)prior.remove();let btn=document.createElement('button');btn.className='v135routefav';btn.textContent=(favorites.routes.includes(l.id)?'★ Remove favorite':'☆ Favorite route')+' · '+l.id;btn.onclick=()=>{toggle('routes',l.id);btn.textContent=(favorites.routes.includes(l.id)?'★ Remove favorite':'☆ Favorite route')+' · '+l.id};root.prepend(btn)};
-function alerts(){let list=incidentState().incidents;const planned=weekendTrackWorkActive()?`<div class="v135card v135alert"><h3>⚠ Weekend track work · Business Square</h3><p><b>Red Line:</b> No train service.<br><b>Pink Line:</b> No train service.<br><b>Yellow Line:</b> Trains run Gage Gehris–Young University ↔ Lucero Convention Center–McNee every 15 minutes. No Yellow Line service at Business Square, Government Center, or Montclair. Temporary shuttle no longer operates.</p><p class="v135muted">October 16–19 · Alert expires Monday, October 19 at 4:30 AM.</p><div><button data-work-line="Yellow">Yellow Line details →</button> <button data-work-line="Red">Red Line details →</button> <button data-work-line="Pink">Pink Line details →</button></div></div>`:'';v('v135alertlist').innerHTML=v17PlannedAlerts()+planned+(list.length?list.map((x,i)=>`<div class="v135card v135alert"><h3>⚠ ${esc(x.reason||x.type||'Service disruption')}</h3><div>${esc((x.affected||[]).join(', '))}</div><p class="v135muted">${x.minutes||x.delay||'Variable'} min delay · Simulated</p></div>`).join(''):(planned?'':'<div class="v135card">✓ No active simulated service disruptions right now.</div>'));v('v135alertlist').querySelectorAll('[data-work-line]').forEach(b=>b.onclick=()=>{tab('metro');const line=L.find(l=>l.id===b.dataset.workLine);if(line)openDetails(line,0);});}
+function alerts(){let list=incidentState().incidents;const planned=false?`<div class="v135card v135alert"><h3>⚠ Weekend track work · Business Square</h3><p><b>Red Line:</b> No train service.<br><b>Pink Line:</b> No train service.<br><b>Yellow Line:</b> Trains run Gage Gehris–Young University ↔ Lucero Convention Center–McNee every 15 minutes. No Yellow Line service at Business Square, Government Center, or Montclair. Temporary shuttle no longer operates.</p><p class="v135muted">October 16–19 · Alert expires Monday, October 19 at 4:30 AM.</p><div><button data-work-line="Yellow">Yellow Line details →</button> <button data-work-line="Red">Red Line details →</button> <button data-work-line="Pink">Pink Line details →</button></div></div>`:'';v('v135alertlist').innerHTML=v17PlannedAlerts()+planned+(list.length?list.map((x,i)=>`<div class="v135card v135alert"><h3>⚠ ${esc(x.reason||x.type||'Service disruption')}</h3><div>${esc((x.affected||[]).join(', '))}</div><p class="v135muted">${x.minutes||x.delay||'Variable'} min delay · Simulated${x.offload?' · Some trains may offload at '+esc(x.segment):''}</p></div>`).join(''):(planned?'':'<div class="v135card">✓ No active simulated service disruptions right now.</div>'));v('v135alertlist').querySelectorAll('[data-work-line]').forEach(b=>b.onclick=()=>{tab('metro');const line=L.find(l=>l.id===b.dataset.workLine);if(line)openDetails(line,0);});}
 function go(){
  const periods=[['v135period',['Month','All Time'],period,x=>period=x],['v135metric',['Points','On-time','Ratings'],metric,x=>metric=x],['v135group',['All','Rail','Bus'],group,x=>group=x]];
  for(const [id,values,current,set] of periods){const p=v(id);p.innerHTML=values.map(x=>`<button class="${x===current?'active':''}" data-value="${x}">${x}</button>`).join('');p.querySelectorAll('button').forEach(b=>b.onclick=()=>{set(b.dataset.value);go()})}
