@@ -77,7 +77,7 @@ body.v135-metro main{display:block!important}body.v135-metro .v135page{display:n
 </style><style id="v173-mini-style">.v173-mini-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0}.v173-mini-nav button{border:1px solid #aa6033;border-radius:10px;background:#57301a;color:#ffd3b0;font-size:28px;min-width:48px;min-height:44px}.v173-mini-nav span{font-size:13px;text-align:center;color:#eac2a7}</style><style id="v172-mini-style">
 .v172-mini-head{padding:16px 4px 18px}.v172-mini-head h2{margin:12px 0 5px;font-size:1.35rem}.v172-mini-close{background:#22374b;color:white;border:1px solid #597083;border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer}.v172-mini-card{background:#351d10;border-left:4px solid var(--route,#ff852e);border-radius:12px;padding:15px;margin:12px 0;color:#f6c3a3}.v172-mini-top{display:flex;align-items:flex-start;gap:12px}.v172-mini-code{font-size:2rem;min-width:64px}.v172-mini-info{flex:1;display:flex;flex-direction:column;gap:4px}.v172-mini-info small,.v172-mini-muted{color:#cda98e}.v172-mini-eta{font-size:1.3rem;color:#ff8a35;white-space:nowrap}.v172-mini-times{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.v172-mini-chip{background:#623923;padding:7px 10px;border-radius:9px;font-weight:600}.v172-mini-route{background:transparent;color:#ffad73;border:0;padding:8px 0;cursor:pointer;font-weight:700}
 </style>
-</head><body><main><header><nav><small>LUCERO TRANSIT</small></nav><h1>Nearby departures <span class="tag">◉</span></h1><div class="hint">◉ Updating fictional arrivals · not live GPS</div></header><div id="workAlert" hidden style="display:none"></div><div id="sLineNotice" hidden style="display:none"></div><div class="locator"><label for="station"><b>📍 Your Metro station</b></label><select id="station"></select><div class="hint">Choose a station in Lucero. No phone location is used.</div></div><div class="bar"><span id="clock">Lucero time</span><span id="count">Loading routes…</span></div><section id="routes" class="routes"></section><button id="inactiveToggle" class="inactiveToggle" aria-expanded="false">Show inactive lines ▾</button><section id="inactive" class="routes inactive" hidden></section><div class="footer">All times are fictional, deterministic predictions based on provisional schedules, not real vehicle GPS. Station lists reflect your updated line-by-line service information. Transfer grouping is shown for nearby Del Toro, Court Square and Court House. v11: All arrivals and automated delays are fictional estimates, not real-time vehicle data. Manassas State: two occupied apartment complexes, 400 units total, approximately five minutes from Metro; ridership estimates should account for this development without assuming all residents ride.</div></main><div id="detailsOverlay" class="sheet-backdrop" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Route details" id="detailsSheet"><div class="sheet-header"><div><div class="sheet-muted">LUCERO TRANSIT · ROUTE DETAILS</div><h2 class="sheet-title" id="detailsTitle"></h2><div id="detailsSub" class="sheet-muted"></div></div><button class="sheet-close" id="detailsClose" aria-label="Close route details">×</button></div><div id="detailsBody"></div></section></div>
+</head><body><main><header><nav><small>LUCERO TRANSIT</small></nav><h1>Nearby departures <span class="tag">◉</span></h1><div class="hint">◉ Updating fictional arrivals · not live GPS</div></header><div id="workAlert" hidden style="display:none"></div><div id="sLineNotice" hidden style="display:none"></div><div class="locator"><label for="station"><b>📍 Your stop</b></label><select id="station"></select><div class="hint">Choose any listed stop or use Random Stop. No phone location is used.</div></div><div class="bar"><span id="clock">Lucero time</span><span id="count">Loading routes…</span></div><section id="routes" class="routes"></section><button id="inactiveToggle" class="inactiveToggle" aria-expanded="false">Show inactive lines ▾</button><section id="inactive" class="routes inactive" hidden></section><div class="footer">All times are fictional, deterministic predictions based on provisional schedules, not real vehicle GPS. </div></main><div id="detailsOverlay" class="sheet-backdrop" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Route details" id="detailsSheet"><div class="sheet-header"><div><div class="sheet-muted">LUCERO TRANSIT · ROUTE DETAILS</div><h2 class="sheet-title" id="detailsTitle"></h2><div id="detailsSub" class="sheet-muted"></div></div><button class="sheet-close" id="detailsClose" aria-label="Close route details">×</button></div><div id="detailsBody"></div></section></div>
 <script>
 'use strict';
 (function(){const now=new Date();const end=new Date('2026-10-19T04:30:00-04:00');const start=new Date('2026-10-16T00:00:00-04:00');const el=document.getElementById('workAlert');if(el)el.style.display=now>=start&&now<end?'block':'none';})();
@@ -195,7 +195,7 @@ const RAIL_STATIONS=L.filter(l=>l.mode==='Metro').flatMap(l=>l.stops);
 // Your Metro lists Metro stations exclusively; light rail interchange stops remain if they are Metro stations too.
 for(const s of [...new Set(RAIL_STATIONS)].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'})))select.add(new Option(s==='Walker Road Metro'?'Walker Road':s,s));
 const aliases={'Joseph Square':J,'Walker Road':'Walker Road Metro','Bancroft–Southside':B,'C Street–Ox Town':O,'Winnipeg Avenue–Zoo':Z,'New Branswell Avenue Metro':'New Branswell Avenue - Arena','Trintrilly':'Trintrilly Metro','Young University':'Young University'};
-const saved=new URLSearchParams(location.search).get('station')||localStorage.getItem('lucero-station')||J;
+const saved=new URLSearchParams(location.search).get('station')||J;
 const canonicalSaved=saved==='21st Street'?'22nd Street':(aliases[saved]||saved);
 select.value=[...select.options].some(o=>o.value===canonicalSaved)?canonicalSaved:J;
 select.onchange=()=>{localStorage.setItem('lucero-station',select.value);history.replaceState(null,'','?station='+encodeURIComponent(select.value));directions={};render();};
@@ -1064,7 +1064,7 @@ render();setInterval(()=>{if(!document.hidden&&document.body.classList.contains(
 </script><style>
 body{padding-bottom:83px} .v135nav{position:fixed;bottom:0;left:0;right:0;z-index:16;background:#111a25;border-top:1px solid #344555;display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.v135nav>div{width:min(100%,720px);display:flex}.v135nav button{flex:1;min-width:0;border:0;border-radius:0;background:transparent;color:#aebccc;padding:10px 2px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:5px}.v135nav button b{font-size:21px}.v135nav button.active{color:#ff994f;background:#2c251f}.v135page{max-width:720px;margin:auto;padding:18px 16px}.v135page[hidden]{display:none!important}.v135card{background:#192f40;border:1px solid #365063;border-radius:14px;padding:15px;margin:12px 0}.v135card h3{margin:0 0 8px}.v135muted{font-size:12px;color:#afc2d0}.v135row{display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid #365063;padding:12px 0}.v135row:last-child{border:0}.v135badge{border-radius:8px;padding:6px 9px;background:#d7662d;color:#fff;font-weight:800;min-width:47px;text-align:center}.v135small{font-size:12px;color:#d1dfeb}.v135fav{background:#4c3c24;color:#ffcd7d}.v135action{background:#e66d32;border:0;padding:10px 14px}.v135title{font-size:25px;margin:4px 0 12px}.v135alert{border-left:4px solid #f7bd55}.v135seg{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.v135seg button.active{background:#e66d32;border-color:#e66d32}.v135page select{background:#e8f4ff;color:#18384b}.v135tracker{height:68vh;width:100%;border:0;background:#111}body.v135-home main,body.v135-track main,body.v135-alerts main,body.v135-go main{display:none}body.v135-metro .v135page{display:none}body.v135-home #v135home,body.v135-track #v135track,body.v135-alerts #v135alerts,body.v135-go #v135go{display:block!important}body.v135-metro #v135metrostar{display:block}#v135metrostar{display:none;padding:8px 16px;background:#132b3b}body.v135-metro #v135board{display:block}#v135board{display:none}#v135board{padding:12px 16px;background:#122735}.v135stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.v135stats .v135card{margin:0}.v135stats strong{font-size:24px}#v135board .v135row{padding:9px 0}
 .go-route-icon{display:inline-flex;align-items:center;min-height:36px}.go-bus-icon{background:#f7a64e;color:#18222e;border-radius:7px;padding:7px 12px;font-size:16px;font-weight:900}.go-rank{cursor:pointer}.v135card[role=button]:focus-visible{outline:2px solid #ff9b55}#v142riders .v135row{justify-content:space-between}#v142riders .v135row span{flex:1;margin-left:15px}</style><div id="v135metrostar"><button id="v135stationstar">☆ Favorite this station</button></div><div id="v135board"><h3>Combined station departure board</h3><div class="v135muted">Next simulated departures at this Metro station · connecting rail and bus</div><div id="v135boardrows"></div></div>
-<section class="v135page" id="v135home" hidden><h2 class="v135title">Welcome to Lucero Transit</h2><div class="v135muted">v17 · Service planning and public poll · Fictional transit demo</div><div class="v135card"><h3>★ Favorite stations</h3><div id="v135favstations"></div><button class="v135action" data-tab="metro">Find a station →</button></div><div class="v135card"><h3>★ Favorite routes</h3><div id="v135favroutes"></div><button class="v135action" data-tab="metro">Explore routes →</button></div><div class="v135card"><h3>Service overview</h3><div id="v135overview"></div><button data-tab="alerts">View service alerts →</button></div></section>
+<section class="v135page" id="v135home" hidden><h2 class="v135title">Welcome to Lucero Transit</h2><div class="v135muted">v18 preview · January expansion coming soon · Simulated departures</div><div class="v135card"><h3>★ Favorite stations</h3><div id="v135favstations"></div><button class="v135action" data-tab="metro">Find a station →</button></div><div class="v135card"><h3>★ Favorite routes</h3><div id="v135favroutes"></div><button class="v135action" data-tab="metro">Explore routes →</button></div><div class="v135card"><h3>Service overview</h3><div id="v135overview"></div><button data-tab="alerts">View service alerts →</button></div></section>
 
 <section class="v135page" id="v135alerts" hidden><h2 class="v135title">Service status</h2><p class="v135muted">Automated simulated incidents · balanced frequency (approximately 5–10% of active services)</p><div id="v135alertlist"></div></section>
 <nav class="v135nav" aria-label="Main navigation"><div><button data-tab="home"><b>⌂</b>Home</button><button data-tab="metro"><b>◎</b>Your Metro</button><button data-tab="alerts"><b>⚠</b>Alerts</button></div></nav><script>
@@ -1238,7 +1238,7 @@ function v17StationNotice(station){const panel=document.getElementById('v17stati
 .v17pollnav{display:block;width:100%;margin-top:8px}.v17pollnav button{width:100%;background:#1d4057;border:1px solid #597389;color:white;padding:12px;border-radius:11px;font-weight:750}
 .v17poll .choice{display:flex;gap:10px;align-items:center;justify-content:space-between}
 </style>
-<section class="v17poll" id="v17poll" hidden role="dialog" aria-modal="true" aria-label="Public service change poll"><button type="button" id="v17pollclose" aria-label="Close poll and return to previous page">✕ Close</button><h2>Lucero Transit · Public Service Poll</h2><p>Eight independent proposals · November 3–17, 2026 · Approved changes scheduled for January 1, 2027.</p><div id="v17pollstatus" class="status"></div><div id="v17questions"></div><button id="v17vote">Save my ballot on this device</button><div class="card"><h3>Results and voting integrity</h3><p>This is a <b>local ballot preview</b>. Selections are stored only in this browser, not collected or counted citywide. An official public poll requires a shared vote database and duplicate-vote protection. No results are fabricated, and votes here do not change transit service.</p><button id="v17results">View poll status</button><div id="v17resultstext"></div></div></section>
+<section class="v17poll" id="v17poll" hidden role="dialog" aria-modal="true" aria-label="Public service change poll"><button type="button" id="v17pollclose" aria-label="Close poll and return to previous page">✕ Close</button><h2>Lucero Transit · Public Service Poll</h2><p>Eight independent proposals · November 3–17, 2026 · Approved changes scheduled for January 1, 2027.</p><div id="v17pollstatus" class="status"></div><div id="v17questions"></div><button id="v17vote">Save my ballot on this device</button><div class="card"><h3>Results and voting integrity</h3><p>This is a <b>local ballot preview</b>. Selections are stored only in this browser, not collected or counted citywide. An official public poll requires a shared vote database and duplicate-vote protection. No results are fabricated, and votes here do not change transit service.</p><button id="v17results">View closed poll and my ballot</button><div id="v17resultstext"></div></div></section>
 <script>
 (()=>{
  const questions=[
@@ -1254,16 +1254,88 @@ function v17StationNotice(station){const panel=document.getElementById('v17stati
  const get=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const now=()=>new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
  const date=()=>{const d=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const p=Object.fromEntries(d.map(x=>[x.type,x.value]));return p.year+'-'+p.month+'-'+p.day};
- const isOpen=()=>date()>='2026-11-03'&&date()<'2026-11-18';
- function status(){const d=date(),msg=d<'2026-11-03'?'Voting has not opened yet.':d<'2026-11-18'?'Voting window: November 3–17, 2026.':'Voting has closed. Official results have not been supplied.';get('v17pollstatus').textContent=msg+' Winning proposals, once confirmed, take effect January 1, 2027.';get('v17vote').disabled=!isOpen();}
+ const isOpen=()=>false; // Poll closed by agency request in v18 preview
+ function status(){const msg='Poll closed November 17, 2026. Shared vote totals were not collected.';get('v17pollstatus').textContent=msg+' Winning proposals, once confirmed, take effect January 1, 2027.';get('v17vote').disabled=!isOpen();}
  function render(){const saved=JSON.parse(localStorage.getItem('lucero-v17-ballot')||'{}');get('v17questions').innerHTML=questions.map((q,i)=>'<div class="card"><h3>Proposal '+(i+1)+' — '+esc(q[0])+'</h3><p>'+esc(q[1])+'</p><label><input type="radio" name="v17q'+i+'" value="yes" '+(saved[i]==='yes'?'checked':'')+'> YES — Approve change</label><label><input type="radio" name="v17q'+i+'" value="no" '+(saved[i]==='no'?'checked':'')+'> NO — Keep existing service</label></div>').join('');status()}
  get('v17vote').onclick=()=>{if(!isOpen())return;const ballot={};for(let i=0;i<questions.length;i++){const x=document.querySelector('input[name="v17q'+i+'"]:checked');if(x)ballot[i]=x.value}if(!Object.keys(ballot).length){alert('Select at least one YES or NO choice.');return;}localStorage.setItem('lucero-v17-ballot',JSON.stringify(ballot));get('v17pollstatus').textContent='Your ballot selections were saved locally on this device. This is not an official submitted vote.';};
- get('v17results').onclick=()=>{const d=date();get('v17resultstext').textContent=d<'2026-11-18'?'Voting is still open. No official results are available.':'The voting period is over. Official results must be supplied before any poll-dependent January 1 service changes can be activated.';};
+ get('v17results').onclick=()=>{let ballot={};try{ballot=JSON.parse(localStorage.getItem('lucero-v17-ballot')||'{}')}catch(e){};const yes=Object.values(ballot).filter(v=>v==='yes').length,no=Object.values(ballot).filter(v=>v==='no').length;get('v17resultstext').textContent='Voting CLOSED · Your device: '+yes+' YES, '+no+' NO, '+(8-yes-no)+' unanswered. These are your saved selections, not citywide vote totals. No official results are available; poll-dependent changes remain undecided.';};
  window.v17OpenPoll=()=>{get('v17poll').hidden=false;document.body.classList.add('v17-poll-open');render();};
  window.v17ClosePoll=()=>{get('v17poll').hidden=true;document.body.classList.remove('v17-poll-open')};document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',window.v17ClosePoll));
- const btn=document.createElement('div');btn.className='v17pollnav';btn.innerHTML='<button type="button">🗳 Public service change poll · 8 proposals</button>';get('v135home').prepend(btn);btn.querySelector('button').onclick=window.v17OpenPoll;
+ const btn=document.createElement('div');btn.className='v17pollnav';btn.innerHTML='<button type="button">🗳 Closed poll · view local ballot</button>';get('v135home').append(btn);btn.querySelector('button').onclick=window.v17OpenPoll;
  const close=get('v17pollclose');if(close)close.onclick=window.v17ClosePoll;get('v17poll').addEventListener('click',e=>{if(e.target===get('v17poll'))window.v17ClosePoll()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!get('v17poll').hidden)window.v17ClosePoll()});
  render();
 })();
 </script>
+
+<script id="v18-enhancements">
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const future=[
+ ['501','Fullerton Courthouse','Government Center','Weekday commuter peak-direction service','Duncanville · Littlewood · Manassas State'],
+ ['R60','Downtown Littlewood Bus Hub','Littlewood Airport','24/7 · 20 min daytime / 40 min overnight','Hotel District'],
+ ['R70','Sandy Complex Apartments','Manassas Metro','Weekdays 5 AM–11 PM, 20/30 min · weekends 7 AM–10 PM, 30 min','Littlewood TC · Burke County Government Center · Manassas State'],
+ ['R71','West Littlewood','East Littlewood','Daily 5:45 AM–10:20 PM · weekday 20/45 min · weekend 30 min','Littlewood TC · Medical Center'],
+ ['R72','Littlewood Airport','Bock Apartments','Weekdays 5 AM–midnight, 20/30 min · weekends 7 AM–midnight, frequency TBD','Hotel District · Littlewood University · Downtown Littlewood'],
+ ['W50','Burke Center','Mount City','Weekdays 5:30 AM–7 PM · 30/60 min','Glen Apartments · Manassas State'],
+ ['U27','East Complex','Pschigoda','Weekdays 5:30 AM–11:30 PM, 15/25 min · weekends 7 AM–10:30 PM, 20 min','Toriyama Village · Chinatown · Culbreth · John Roxbury University'],
+ ['E20','East Complex','Beadles','Daily 4:30 AM–midnight · weekday 20/25 min · weekend 25 min','Saint Owen · Point Pleasant · Beadles Convention Center'],
+ ['E21','East Lucero','Gannon','Weekdays 4 AM–2 AM, 15/20 min · weekends 6 AM–1 AM, frequency TBD','Saint Owen–Concert Hall · Burdett · Muzan'],
+ ['E22','Beadles','Pennbrook','Weekdays 5 AM–midnight, 20/25 min · weekends 7 AM–11 PM, 25 min','Glenarden · Point Pleasant · Saint Helens Road'],
+ ['E25','Culbreth','Beadles Convention Center','Weekdays 7 AM–11 PM · 25/35 min · no weekend service','Kingsman Highway · Glenarden · Point Pleasant'],
+ ['E29','Point Pleasant','Hopewell','Weekdays 4:50 AM–11:30 PM, 20/30 min · weekends 7 AM–midnight, 30 min','North Muzan · Old Town Road'],
+ ['E30','Lucero International Airport','Muzan','24/7 · weekday daytime 15–18 min · weekend daytime 20 min · overnight 25 min','Pschigoda (southbound only) · Glenarden · Adyn · Point Pleasant · North Muzan']
+];
+function futureCards(){
+ const box=document.createElement('section');box.className='v18-future';
+ const title=document.createElement('h3');title.textContent='Coming Soon · January 1, 2027';box.append(title);
+ const intro=document.createElement('p');intro.textContent='Planned routes only. No live or simulated departures are shown before launch.';box.append(intro);
+ for(const [id,from,to,schedule,via] of future){const card=document.createElement('article');card.className='v18-futurecard';
+ const name=document.createElement('div');name.className='v18-futurehead';
+ const badge=document.createElement('strong');badge.textContent=id;const label=document.createElement('span');label.textContent='COMING SOON';name.append(badge,label);
+ const dest=document.createElement('div');dest.className='v18-destination';dest.textContent=from+' ↔ '+to;
+ const route=document.createElement('div');route.textContent='Via '+via;
+ const hours=document.createElement('small');hours.textContent=schedule;
+ card.append(name,dest,route,hours);box.append(card);
+ }
+ const rail=document.createElement('div');rail.className='v18-futurecard';rail.innerHTML='<strong>🚇 January rail expansion</strong><div>Red Line: Golden Coast → Drybury → Minerva</div><div>Orange Line: Montclair → Toriyama Village → Saint Owen North → Saint Helens Road → Point Pleasant</div><small>S Light Rail reopening · D4 replaced by D6 · poll-dependent changes pending</small>';box.append(rail);
+ return box;
+}
+// The inactive panel is owned by the existing renderer. Append planned services after each render.
+const oldRender=window.render;
+if(typeof oldRender==='function'){
+ window.render=function(){oldRender();const inactive=$('inactive');if(!inactive)return;inactive.append(futureCards());const toggle=$('inactiveToggle');if(toggle){toggle.hidden=false;toggle.textContent=(window.showInactive?'Hide':'Show')+' inactive lines & coming soon ▾';}};
+}
+// Add all existing route stops to the picker, while keeping the original rail stations.
+const picker=$('station');
+const all=new Set([...picker.options].map(o=>o.value));
+if(typeof L!=='undefined')for(const l of L){if(l.stops)for(const st of l.stops)all.add(st);}
+// Route-specific stop arrays (already present in this version) expand bus-stop coverage.
+for(const key of ['BUS_STOPS','BUS_V10','BUS_V11']){
+ try{const obj=key==='BUS_STOPS'?BUS_STOPS:key==='BUS_V10'?BUS_V10:BUS_V11;
+ for(const dirs of Object.values(obj))for(const dir of dirs)for(const st of dir)all.add(st);}catch(e){}
+}
+for(const st of [...all].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})))if(![...picker.options].some(o=>o.value===st))picker.add(new Option(st,st));
+const pool=[...picker.options].map(o=>o.value).filter(st=>typeof L!=='undefined'&&L.some(l=>l.stops?.includes(st)));
+const home=$('v135home');const panel=document.createElement('section');panel.className='v135card v18-random';
+panel.innerHTML='<h3>📍 Your random stop</h3><p class="v135muted">A different fictional location each time you open the site. See departures for every route serving the selected stop.</p><div id="v18-randomname" class="v18-randomname"></div><div class="v18-buttons"><button type="button" id="v18-another">🎲 Another random stop</button><button type="button" id="v18-open">View all departures →</button></div><div id="v18-preview" class="v135muted"></div>';
+home.insertBefore(panel,home.firstChild.nextSibling);
+const urlStop=new URLSearchParams(location.search).get('station');
+function chooseStop(){if(!pool.length)return;const i=Math.floor(Math.random()*pool.length);picker.value=pool[i];picker.dispatchEvent(new Event('change'));update();}
+function update(){const stop=picker.value;$('v18-randomname').textContent=stop;const served=L.filter(l=>l.stops?.includes(stop)).map(l=>l.id);$('v18-preview').textContent=served.length?'Routes at this stop: '+served.join(' · '):'Open departures to view nearby connections.';}
+$('v18-another').onclick=chooseStop;
+$('v18-open').onclick=()=>{document.querySelector('[data-tab="metro"]')?.click();};
+if(urlStop&&[...picker.options].some(o=>o.value===urlStop)){picker.value=urlStop;picker.dispatchEvent(new Event('change'));update();}
+else chooseStop();
+picker.addEventListener('change',update);
+// Keep a visible future-route section in the inactive area even when no active services are found.
+const inactive=$('inactive');inactive.append(futureCards());$('inactiveToggle').hidden=false;
+// Ensure the future section is restored after subsequent re-renders, which replaceChildren().
+const observer=new MutationObserver(()=>{if(!inactive.querySelector('.v18-future'))inactive.append(futureCards());});
+observer.observe(inactive,{childList:true});
+})();
+</script>
+<style id="v18-styles">
+.v18-randomname{font-size:24px;font-weight:850;color:#ffb37c;margin:12px 0}.v18-buttons{display:flex;gap:8px;flex-wrap:wrap}.v18-buttons button{background:#e66d32;border:0;padding:12px 13px;font-weight:750}.v18-buttons button+button{background:#214b64}.v18-random #v18-preview{margin-top:12px;line-height:1.6}.v18-future{padding:18px 16px;background:#172d3d;color:#e8f5ff}.v18-future h3{margin:0 0 5px;font-size:22px}.v18-future p{font-size:12px;color:#b8cddd}.v18-futurecard{padding:15px;margin:11px 0;border:1px solid #466078;border-radius:12px;background:#1c3446;color:#eaf4ff;line-height:1.5}.v18-futurehead{display:flex;justify-content:space-between;gap:8px;align-items:center}.v18-futurehead strong{font-size:26px;color:#ffb178}.v18-futurehead span{font-size:10px;font-weight:900;background:#55411c;color:#ffe4a4;border-radius:6px;padding:5px 8px}.v18-destination{font-size:16px;font-weight:750;margin:5px 0}.v18-futurecard small{display:block;margin-top:8px;color:#a7d0e5}.v18-futurecard div:not(.v18-futurehead){font-size:13px}
+</style>
 </body></html>
