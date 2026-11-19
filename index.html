@@ -1136,7 +1136,7 @@ tab('home');
 (()=>{
  const get=id=>document.getElementById(id), h=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
  const data={Lucero:{
- 'Burke County':['Littlewood','Littlewood National Airport','East Littlewood'],
+ 'Burke County':['Burke Center','Littlewood','Downtown Littlewood','West Littlewood','East Littlewood','Littlewood Airport','Littlewood National Airport','Littlewood University','Littlewood Transportation Center','Burke County Government Center'],
  'Nicholas County':['Castle Rock','Gage Gehris','Young University','Dysart','Drybury','Golden Coast','Orvard','Orvard University','Brittenham','Mount City'],
  'Glover County':['Hilltop','Glover','Fort William','Hilltop University','Drybury','Minerva'],
  'South County':['Corinburg','Trintrilly','Roswell','Markham','Schildkraut','DHQ','Pennbrook','Saratoga','Odenton','Airfield Road','Southport','Target Center','Ballston'],
@@ -1144,9 +1144,9 @@ tab('home');
  'Northeast County':[],
  'Camron County':['Pschigoda','West Pschigoda','The Hills','Adyn','Fairfax','Springfield','Glenarden','Point Pleasant','Manassas','Manassas State University','Meli'],
  'City of Lucero':{'Downtown':['Government Center','Southcity Crossing','Central Hospital','Post Street','Old Town Crossing','East McNee','West McNee','Business Square','Phoenix Heights'],'West End':['West End'],'Ox Town':['Ox Town'],'8th Street - Park Avenue':['8th Street - Park Avenue'],'Southside':['Clifton','Cascades','Seat Pleasant','Bancroft - Watson'],'South Lucero':['C Street Corridor','South Lucero Transit Center - Golden Coast Mall','Southern Park'],'University of Lucero':['University of Lucero'],'North Lucero':['Dames Street Corridor','Joseph Square','Franklin Square','Del Toro','Stadium Hall','Court House','Zoo','Cagetown'],'Westmore Avenue':['Westmore Avenue'],'Crossley Park':['Crossley Park'],'Culbreth':['Culbreth'],'John Roxbury University':['John Roxbury University'],'Lucero International Airport':['Lucero International Airport'],'East Lucero':['Burdett','North Burdett','Toriyama Village','East Complex','Saint Owen','Eastern Market']}
- },Corterra:{'Corterra County':['Fullerton Courthouse','Duncanville','West Littlewood','Redwood']},Alexandria:{'Gibbon County':['Corbert','Rustad','Knoxville','Snowfoot','University of Alexandria'],'Prince George County':['Alexandria State University','Prince George']}};
+ },Corterra:{'Corterra County':['Fullerton Courthouse','Duncanville','West Littlewood','Redwood','East Littlewood']},Alexandria:{'Gibbon County':['Corbert','Rustad','Knoxville','Snowfoot','University of Alexandria','East End','Center Road Apartments'],'Prince George County':['Alexandria State University','Prince George']}};
  const alias={'Rustad':'Rustad Station','McNee':'Lucero Convention Center - McNee','Joseph Square':'Joseph Square - NLCC - Law Center','Crossley Park':'Crossly Park','Dames Street Corridor':'Dames Street','C Street Corridor':'C Street - Ox Town','Zoo':'Winnipeg Avenue - Zoo','Fordham–East Station':'Fordham East Station','Gage Gehris':'Gage Gehris - Young University','Young University':'Gage Gehris - Young University','Drybury':'Drybury Metro','Trintrilly':'Trintrilly Metro','South Lucero':'South Lucero Transit Center','West McNee':'Lucero Convention Center - McNee','Bancroft - Watson':'Bancroft - Southside'};
- const box=document.createElement('section');box.className='v16browse';box.innerHTML=`<h3>📍 Find Transit by Area</h3><p>Choose a state, county and community. Only confirmed stops and corridors are matched; fictional departure predictions are not live GPS.</p><input id="v16search" class="v16search" placeholder="Search a route, station or community" aria-label="Search locations and routes"><div class="v16fields" style="margin-top:12px"><div><label for="v16state">State</label><select id="v16state"><option>Lucero</option><option>Alexandria</option></select></div><div><label for="v16county">County / independent city</label><select id="v16county"></select></div></div><div class="v16fields v16area"><div><label for="v16district">District (City of Lucero)</label><select id="v16district"></select></div><div><label for="v16community">Community / location</label><select id="v16community"></select></div></div><div class="v16filters" id="v16filters"></div><div id="v16results" aria-live="polite"></div>`;
+ const box=document.createElement('section');box.className='v16browse';box.innerHTML=`<h3>📍 Find Transit by Area</h3><p>Choose a state, county and community. Only confirmed stops and corridors are matched; fictional departure predictions are not live GPS.</p><input id="v16search" class="v16search" placeholder="Search a route, station or community" aria-label="Search locations and routes"><div class="v16fields" style="margin-top:12px"><div><label for="v16state">State</label><select id="v16state"><option>Lucero</option><option>Alexandria</option><option>Corterra</option></select></div><div><label for="v16county">County / independent city</label><select id="v16county"></select></div></div><div class="v16fields v16area"><div><label for="v16district">District (City of Lucero)</label><select id="v16district"></select></div><div><label for="v16community">Community / location</label><select id="v16community"></select></div></div><div class="v16filters" id="v16filters"></div><div id="v16results" aria-live="polite"></div>`;
  const home=get('v135home');
  // Preserve the existing Yellow Line weekend construction notice on Home,
  // while the Alerts tab continues to render its own dated service card.
@@ -1454,11 +1454,11 @@ body.v135-metro #v181findmy,body.v135-metro #v181results,body.v135-metro #v18pla
 <script id="v184-script">(()=>{'use strict';
 const station=document.getElementById('station');
 const activeRoutes=[
-{id:'E55',mode:'Bus',operator:'METROBUS',color:'#ef923c',stops:['Lucero International Airport','Russell Road Park & Ride','Knoxville Park & Ride','Rustad Transportation Center'],duration:45,head:25,always:false},
-{id:'10',mode:'Bus',operator:'ART',color:'#245eaa',stops:['Rustad Transportation Center','Rustad Highway','Knoxville Park & Ride','Corbert'],duration:33,head:30},
-{id:'11',mode:'Bus',operator:'ART',color:'#245eaa',stops:['Rustad - University Hospital Center','Downtown','Center Road Apartments'],duration:26,head:30},
-{id:'12',mode:'Bus',operator:'ART',color:'#245eaa',stops:['Knoxville Park & Ride','Knoxville Road','Downtown','East End'],duration:30,head:25},
-{id:'14',mode:'Bus',operator:'ART',color:'#245eaa',stops:['University of Alexandria','Main Street','Downtown'],duration:22,head:30},
+{id:'E55',mode:'Bus',operator:'METROBUS',color:'#ef923c',stops:['Lucero International Airport','Russell Road Park & Ride','Knoxville Park & Ride','Rustad'],duration:45,head:25,always:false},
+{id:'10',mode:'Bus',operator:'ART',color:'#245eaa',stops:['Corbert','Knoxville Park & Ride','Rustad Highway','Rustad'],duration:33,head:30},
+{id:'11',mode:'Bus',operator:'ART',color:'#245eaa',stops:['Rustad – University Hospital Center','Downtown','Center Road Apartments'],duration:26,head:30},
+{id:'12',mode:'Bus',operator:'ART',color:'#245eaa',stops:['Knoxville Park & Ride','Knoxville Road','Downtown Rustad','East End'],duration:30,head:25},
+{id:'14',mode:'Bus',operator:'ART',color:'#245eaa',stops:['Rustad','Main Street','University of Alexandria'],duration:22,head:30},
 {id:'70',mode:'Bus',operator:'ART',color:'#245eaa',stops:['Muzan','Burtonsville','Alexandria State University'],duration:36,head:30}
 ];
 for(const r of activeRoutes)if(!L.some(x=>x.id===r.id))L.push(r);
@@ -1480,7 +1480,7 @@ station.replaceChildren(...[...railNames].sort((a,b)=>a.localeCompare(b,undefine
 station.value=railNames.has(prev)?prev:'Government Center';
 const loc=document.querySelector('.locator');const search=document.createElement('input');search.id='v184search';search.type='search';search.placeholder='Search any Metro, light rail or bus stop';search.setAttribute('aria-label','Search any stop');
 const matches=document.createElement('div');matches.id='v184matches';loc.append(search,matches);
-const allNames=[...new Set([...L.flatMap(r=>r.stops||[]),...railNames,...['Russell Road Park & Ride','Knoxville Park & Ride','Rustad Transportation Center']])].sort((a,b)=>a.localeCompare(b));
+const allNames=[...new Set([...L.flatMap(r=>r.stops||[]),...railNames,...['Russell Road Park & Ride','Knoxville Park & Ride','Rustad']])].sort((a,b)=>a.localeCompare(b));
 search.addEventListener('input',()=>{matches.replaceChildren();const q=search.value.trim().toLowerCase();if(q.length<2)return;for(const n of allNames.filter(n=>n.toLowerCase().includes(q)).slice(0,18)){const b=document.createElement('button');b.textContent=n;b.onclick=()=>{if(![...station.options].some(o=>o.value===n))station.add(new Option(n,n));station.value=n;station.dispatchEvent(new Event('change'));search.value='';matches.replaceChildren()};matches.append(b)}});
 station.addEventListener('change',()=>{localStorage.setItem('lucero-v184-stop',station.value)});
 // ART and E55 added to the underlying active routes. Re-render departure board after changes.
@@ -1520,4 +1520,26 @@ const oldRender=render;render=function(){oldRender();const s=L.find(l=>l.id==='S
 const search=document.getElementById('v184search');if(search){const prior=search.oninput;search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();if(q.length<2)return;const matches=document.getElementById('v184matches');for(const route of allFuture.filter(r=>r.id.toLowerCase().includes(q)||r.stops.some(s=>s.toLowerCase().includes(q))).slice(0,12)){const b=document.createElement('button');b.textContent=route.id+' · '+route.stops[0]+' ↔ '+route.stops.at(-1)+' · Coming Soon';b.onclick=()=>{matches.replaceChildren();openDetails(route,0)};matches.append(b)}})}
 // Fix the existing homepage community label in both static and dynamic menus.
 for(const opt of document.querySelectorAll('option'))if(opt.textContent.trim()==='Corbet'){opt.textContent='Corbert';opt.value='Corbert'}
+})();</script><script id="v186-fixes">(()=>{'use strict';
+// The original selector had Corterra in data but omitted it from its actual state options.
+const state=document.getElementById('v16state');
+if(state && ![...state.options].some(o=>o.value==='Corterra'))state.add(new Option('Corterra','Corterra'));
+// Keep ART branding visible after the shared route sheet redraws on direction changes.
+const details=document.getElementById('detailsBody');
+const artLogo=document.querySelector('img.v185-art-logo');
+let lastArtLogo=artLogo?.src||null;
+if(details){new MutationObserver(()=>{
+ const current=details.querySelector('.v185-art-logo');if(current){lastArtLogo=current.src;return}
+ const text=(details.textContent||'').slice(0,450);
+ const routeId=(text.match(/(?:^|\s)(10|11|12|14|70)(?:\s|$)/)||[])[1];
+ if(routeId && lastArtLogo && document.getElementById('detailsOverlay')?.hidden===false){const img=document.createElement('img');img.src=lastArtLogo;img.alt='ART Alexandria Rapid Transit';img.className='v185-art-logo';details.prepend(img)}
+ }).observe(details,{childList:true});}
+// Prevent the old Coming Soon mini-popup if a future card is clicked: use the existing
+// full route sheet handler installed in v185 (capture phase) rather than the card's old onclick.
+const futureRoot=document.getElementById('inactive');
+if(futureRoot){futureRoot.addEventListener('click',e=>{
+ const card=e.target.closest('.v183futurecard');if(!card)return;
+ if(card.dataset.v185==='1')return; // V18.5 handler already opens full route details.
+ // Leave suspended S route card to its own full-sheet click handler.
+},true)}
 })();</script></body></html>
