@@ -77,7 +77,11 @@ body.v135-metro main{display:block!important}body.v135-metro .v135page{display:n
 </style><style id="v173-mini-style">.v173-mini-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0}.v173-mini-nav button{border:1px solid #aa6033;border-radius:10px;background:#57301a;color:#ffd3b0;font-size:28px;min-width:48px;min-height:44px}.v173-mini-nav span{font-size:13px;text-align:center;color:#eac2a7}</style><style id="v172-mini-style">
 .v172-mini-head{padding:16px 4px 18px}.v172-mini-head h2{margin:12px 0 5px;font-size:1.35rem}.v172-mini-close{background:#22374b;color:white;border:1px solid #597083;border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer}.v172-mini-card{background:#351d10;border-left:4px solid var(--route,#ff852e);border-radius:12px;padding:15px;margin:12px 0;color:#f6c3a3}.v172-mini-top{display:flex;align-items:flex-start;gap:12px}.v172-mini-code{font-size:2rem;min-width:64px}.v172-mini-info{flex:1;display:flex;flex-direction:column;gap:4px}.v172-mini-info small,.v172-mini-muted{color:#cda98e}.v172-mini-eta{font-size:1.3rem;color:#ff8a35;white-space:nowrap}.v172-mini-times{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.v172-mini-chip{background:#623923;padding:7px 10px;border-radius:9px;font-weight:600}.v172-mini-route{background:transparent;color:#ffad73;border:0;padding:8px 0;cursor:pointer;font-weight:700}
 </style>
-</head><body><main><header><nav><small>LUCERO TRANSIT</small></nav><h1>Your Metro <span class="tag">◉</span></h1><div class="hint">◉ Updating fictional arrivals · not live GPS</div></header><div id="workAlert" hidden style="display:none"></div><div id="sLineNotice" hidden style="display:none"></div><div class="locator"><label for="station"><b>📍 Your stop</b></label><select id="station"></select><div class="hint">Randomly selected when Your Metro opens. Choose another stop anytime. No phone location is used.</div></div><div class="bar"><span id="clock">Lucero time</span><span id="count">Loading routes…</span></div><section id="routes" class="routes"></section><button id="inactiveToggle" class="inactiveToggle" aria-expanded="false">Show inactive lines ▾</button><section id="inactive" class="routes inactive" hidden></section><div class="footer">All times are fictional, deterministic predictions based on provisional schedules, not real vehicle GPS. </div></main><div id="detailsOverlay" class="sheet-backdrop" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Route details" id="detailsSheet"><div class="sheet-header"><div><div class="sheet-muted">LUCERO TRANSIT · ROUTE DETAILS</div><h2 class="sheet-title" id="detailsTitle"></h2><div id="detailsSub" class="sheet-muted"></div></div><button class="sheet-close" id="detailsClose" aria-label="Close route details">×</button></div><div id="detailsBody"></div></section></div>
+<style id="v183styles">
+.v18futurelocal{display:contents}.v183futurecard{width:100%;box-sizing:border-box;margin:0 0 12px}.v183mark{font-size:inherit;font-weight:900}.v183futurecard .eta strong{font-size:clamp(25px,7vw,52px)}
+.v183futurecard .pill{white-space:normal}.v183overlay{position:fixed;inset:0;background:#000b;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.v183panel{max-height:85vh;overflow:auto;width:min(520px,100%);border-radius:18px;padding:22px;background:#132c40;color:white}.v183panel li{margin:7px 0}.v183panel button{background:#148bc7;color:white;border:0;padding:12px 24px;border-radius:10px}
+.v181ruler .v183time{background:transparent;color:#cbd3df;border:0;border-bottom:2px solid transparent;padding:8px 4px;font-size:13px;cursor:pointer}.v181ruler .v183timeactive{border-bottom-color:#27a8e7;color:white;font-weight:800}
+</style><style id="v183fixes">body:not(.v135-findmy) #v181findmy{display:none!important}body.v135-findmy #v181findmy{display:block!important}body.v135-metro #v18planner,body.v135-metro #v18planbody{display:none!important}</style></head><body><main><header><nav><small>LUCERO TRANSIT</small></nav><h1>Your Metro <span class="tag">◉</span></h1><div class="hint">◉ Updating fictional arrivals · not live GPS</div></header><div id="workAlert" hidden style="display:none"></div><div id="sLineNotice" hidden style="display:none"></div><div class="locator"><label for="station"><b>📍 Your stop</b></label><select id="station"></select><div class="hint">Randomly selected when Your Metro opens. Choose another stop anytime. No phone location is used.</div></div><div class="bar"><span id="clock">Lucero time</span><span id="count">Loading routes…</span></div><section id="routes" class="routes"></section><button id="inactiveToggle" class="inactiveToggle" aria-expanded="false">Show inactive lines ▾</button><section id="inactive" class="routes inactive" hidden></section><div class="footer">All times are fictional, deterministic predictions based on provisional schedules, not real vehicle GPS. </div></main><div id="detailsOverlay" class="sheet-backdrop" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Route details" id="detailsSheet"><div class="sheet-header"><div><div class="sheet-muted">LUCERO TRANSIT · ROUTE DETAILS</div><h2 class="sheet-title" id="detailsTitle"></h2><div id="detailsSub" class="sheet-muted"></div></div><button class="sheet-close" id="detailsClose" aria-label="Close route details">×</button></div><div id="detailsBody"></div></section></div>
 <script>
 'use strict';
 (function(){const now=new Date();const end=new Date('2026-10-19T04:30:00-04:00');const start=new Date('2026-10-16T00:00:00-04:00');const el=document.getElementById('workAlert');if(el)el.style.display=now>=start&&now<end?'block':'none';})();
@@ -1298,6 +1302,11 @@ const existing=new Set([...picker.options].map(x=>x.value));
 for(const r of allFuture)for(const st of r.stops)if(!existing.has(st)){picker.add(new Option(st,st));existing.add(st)}
 // Include existing routes' stops, but not pseudo-stations with no serving route.
 for(const l of L)for(const st of l.stops||[])if(!existing.has(st)){picker.add(new Option(st,st));existing.add(st)}
+// Alphabetize Your Stop options while retaining the current selection.
+const selectedBeforeSort=picker.value;
+const sortedOptions=[...picker.options].sort((a,b)=>a.textContent.localeCompare(b.textContent,undefined,{numeric:true,sensitivity:'base'}));
+picker.replaceChildren(...sortedOptions);
+if(existing.has(selectedBeforeSort))picker.value=selectedBeforeSort;
 const pool=[...existing].filter(st=>L.some(l=>l.stops?.includes(st)));
 const choose=()=>{if(!pool.length)return;let last=picker.value;let choice=pool[Math.floor(Math.random()*pool.length)];if(pool.length>1&&choice===last)choice=pool[(pool.indexOf(choice)+1)%pool.length];picker.value=choice;picker.dispatchEvent(new Event('change'))};
 // Automatic location assignment; no separate random-stop control.
@@ -1305,7 +1314,29 @@ const choose=()=>{if(!pool.length)return;let last=picker.value;let choice=pool[M
 const requested=new URLSearchParams(location.search).get('station');if(requested&&existing.has(requested)){picker.value=requested;picker.dispatchEvent(new Event('change'))}else choose();
 // Embed upcoming services at their own stations in the inactive section, rather than an unfiltered list.
 const inactive=$('inactive');
-function futureCards(){const stop=picker.value;const found=allFuture.filter(r=>r.stops.includes(stop));const box=document.createElement('div');box.className='v18futurelocal';for(const r of found){const card=document.createElement('article');card.className='v18upcoming v18normalroute';const destination=r.stops[0]===stop?r.stops.at(-1):r.stops.at(-1)===stop?r.stops[0]:r.stops.at(-1);card.innerHTML=`<div class="v18uphead"><strong style="background:${r.color}">${esc(r.id)}</strong><span>${esc(r.mode)} · to ${esc(destination)}</span></div><div class="v18coming">Coming Soon · January 1, 2027</div><small>${esc(r.schedule||'Rail extension')}</small>`;card.onclick=()=>{if(r.future&&r.mode==='Bus')alert(r.id+' · '+r.stops.join(' → ')+'\n'+r.schedule);};box.append(card)}return box}
+function futureCards(){
+ const stop=picker.value,found=allFuture.filter(r=>r.stops.includes(stop));
+ const box=document.createElement('div');box.className='v18futurelocal';
+ for(const r of found){
+  const card=document.createElement('article');card.className='route v183futurecard';card.style.color=r.color;card.tabIndex=0;card.setAttribute('role','button');
+  const at=r.stops.indexOf(stop),toward=r.stops.at(-1),reverse=r.stops[0];
+  const dest=at===r.stops.length-1?reverse:toward;
+  const top=document.createElement('div');top.className='top';
+  const left=document.createElement('div');
+  const id=document.createElement('div');id.className='id';const mark=document.createElement('span');mark.textContent=r.id;mark.className='v183mark';id.append(mark);
+  const title=document.createElement('div');title.className='dest';title.textContent='➜ '+dest;
+  const via=document.createElement('div');via.className='via';via.textContent=(at===r.stops.length-1?'Reverse direction':'Outbound')+' · '+r.mode;
+  left.append(id,title,via);
+  const right=document.createElement('div');right.className='eta';const big=document.createElement('strong');big.textContent='SOON';right.append(big);
+  top.append(left,right);card.append(top);
+  const next=document.createElement('div');next.className='next';const pill=document.createElement('span');pill.className='pill';pill.textContent='Coming Soon · January 1, 2027';next.append(pill);card.append(next);
+  const hint=document.createElement('div');hint.className='details-hint';hint.textContent='Tap for route details ↗';card.append(hint);
+  const details=()=>{const overlay=document.createElement('div');overlay.className='v183overlay';const panel=document.createElement('div');panel.className='v183panel';const heading=document.createElement('h2');heading.textContent=r.id+' · '+r.stops[0]+' ↔ '+r.stops.at(-1);const status=document.createElement('p');status.textContent='Coming Soon · January 1, 2027';const schedule=document.createElement('p');schedule.textContent=r.schedule||'Rail extension';const stops=document.createElement('ol');for(const st of r.stops){const li=document.createElement('li');li.textContent=st;stops.append(li)}const close=document.createElement('button');close.textContent='Close';close.onclick=()=>overlay.remove();panel.append(heading,status,schedule,stops,close);overlay.append(panel);overlay.onclick=e=>{if(e.target===overlay)overlay.remove()};document.body.append(overlay)};
+  card.onclick=details;card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();details()}};
+  box.append(card);
+ }
+ return box;
+}
 function drawFuture(){inactive.querySelector('.v18futurelocal')?.remove();const found=allFuture.some(r=>r.stops.includes(picker.value));if(found){inactive.append(futureCards());$('inactiveToggle').hidden=false;const n=inactive.children.length;$('inactiveToggle').textContent=(inactive.hidden?'Show':'Hide')+' inactive lines ('+n+') '+(inactive.hidden?'▾':'▴')} }
 const obs=new MutationObserver(()=>{if(!inactive.querySelector('.v18futurelocal'))drawFuture()});obs.observe(inactive,{childList:true});drawFuture();picker.addEventListener('change',drawFuture);
 // Every time Your Metro is opened, simulate arriving at a new stop.
@@ -1317,7 +1348,7 @@ $('v18annbody').innerHTML=`<div class="v135card"><h3>January 1, 2027 service cha
 $('v17resultstext').innerHTML=pollMarkup;
 $('v17results').onclick=()=>{$('v17resultstext').innerHTML=pollMarkup};
 // Centralized page navigation; original Home/Your Metro/Alerts still handled by original tab handler.
-const pages={announcements:'v18announcements',map:'v18map',planner:'v18planner',ridership:'v18ridership',projects:'v18projects'};
+const pages={announcements:'v18announcements',map:'v18map',planner:'v18planner',ridership:'v18ridership'};
 const nav=$('.v135nav>div');const more=$('v18more');
 const menu=document.createElement('div');menu.className='v18menu';menu.hidden=true;menu.innerHTML=Object.keys(pages).map(n=>`<button data-v18page="${n}">${({announcements:'📣 Announcements',map:'🗺 System map',planner:'↔ Trip planner',ridership:'▥ Ridership & crowding',projects:'🚧 Expansion tracker'})[n]}</button>`).join('');document.body.append(menu);
 more.onclick=()=>menu.hidden=!menu.hidden;
@@ -1368,6 +1399,7 @@ sel.addEventListener('change',renderBus);renderBus();
 const active=L.filter(r=>Array.isArray(r.stops)&&r.stops.length>1),names=[...new Set(active.flatMap(r=>r.stops))].sort();for(const id of ['v181from','v181to'])names.forEach(n=>$(id).add(new Option(n,n)));$('v181from').value=names.includes('Manassas State')?'Manassas State':names[0];$('v181to').value=names.includes('Government Center')?'Government Center':names.at(-1);
 const adj=new Map();for(const r of active)for(let i=0;i<r.stops.length-1;i++){const a=r.stops[i],b=r.stops[i+1];for(const [u,v] of [[a,b],[b,a]]){if(!adj.has(u))adj.set(u,[]);adj.get(u).push({to:v,line:r})}}
 function path(a,b){let queue=[{at:a,last:'',cost:0}],dist=new Map([[a+'|',0]]),prev=new Map(),best=null;while(queue.length){queue.sort((x,y)=>x.cost-y.cost);const cur=queue.shift(),key=cur.at+'|'+cur.last;if(cur.cost!==dist.get(key))continue;if(cur.at===b){best=key;break}for(const e of adj.get(cur.at)||[]){let cost=cur.cost+3+(cur.last&&cur.last!==e.line.id?9:0),nk=e.to+'|'+e.line.id;if(cost<(dist.get(nk)??Infinity)){dist.set(nk,cost);prev.set(nk,{before:key,from:cur.at,to:e.to,line:e.line});queue.push({at:e.to,last:e.line.id,cost})}}}if(!best)return null;const edges=[];while(prev.has(best)){let p=prev.get(best);edges.unshift(p);best=p.before}return edges}
+let v183Offset=0; let v183Base=Date.now();
 function plan(){
  const a=$('v181from').value,b=$('v181to').value,out=$('v181results');
  if(a===b){out.innerHTML='<div class="v181card">You are already at your destination.</div>';return}
@@ -1381,17 +1413,17 @@ function plan(){
  const base=candidate(new Set());add(base,'Fastest available route');
  if(base){for(const seg of base){if(choices.length>=4)break;add(candidate(new Set([seg.line.id])),'Alternative route')}}
  if(!choices.length){out.innerHTML='<div class="v181card">No connected journey is available using the currently defined routes.</div>';return}
- const now=new Date(),fmt=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
- out.innerHTML='<div class="v181timeline"><div class="v181ruler"><span>'+fmt(now)+'</span><span>'+fmt(+now+15*60000)+'</span><span>'+fmt(+now+30*60000)+'</span><span>'+fmt(+now+45*60000)+'</span></div>'+choices.map(({segments,label},i)=>{
+ const now=new Date(v183Base+v183Offset*60000),fmt=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+ out.innerHTML='<div class="v181timeline"><div class="v181ruler">'+[0,15,30,45].map(m=>'<button type="button" class="v183time '+(m===0?'v183timeactive':'')+'" data-time-offset="'+(v183Offset+m)+'">'+fmt(+now+m*60000)+'</button>').join('')+'</div>'+choices.map(({segments,label},i)=>{
  const wait=2+i*3,duration=segments.reduce((n,s)=>n+s.count*3,0)+Math.max(0,segments.length-1)*7+wait;
  const legs=segments.map((s,j)=>`<div class="v182leg"><div class="v182legtitle"><span class="v181segment" style="background:${safe(s.line.color||'#60b8e0')};flex:none">${safe(s.line.id)}</span><b>${safe(s.from)} → ${safe(s.to)}</b></div><small>${s.count} stop${s.count===1?'':'s'} · approximately ${s.count*3} min</small>${j<segments.length-1?'<p>Transfer at '+safe(s.to)+' · allow approximately 7 min</p>':''}</div>`).join('');
  return `<details class="v181trip v182trip"><summary><div class="v181triphead"><span><b>${safe(label)}</b> · Go in <b style="color:#3bdd8a">${wait} min</b></span><span>${duration} min · ${Math.max(0,segments.length-1)} transfers</span></div><div class="v181segments">${segments.map((s,j)=>`${j?'<span class="v181walk">···</span>':''}<div class="v181segment" style="background:${safe(s.line.color||'#60b8e0')};flex:${Math.max(1,s.count)}">${safe(s.line.id)}</div>`).join('')}</div><div class="v181muted" style="margin-top:10px">${safe(a)} → ${safe(b)} · Estimated arrival ${fmt(+now+duration*60000)}</div><div class="v182hint">Tap to view trip details ▾</div></summary><div class="v182legs"><b>Start at ${safe(a)}</b><p>Board in approximately ${wait} min (${fmt(+now+wait*60000)})</p>${legs}<b>Arrive at ${safe(b)} · ${fmt(+now+duration*60000)}</b></div></details>`
  }).join('')+'</div><p class="v181muted">Illustrative travel and waiting times, not verified departures. Alternatives use different route combinations where available.</p>';
 }
- $('v181go').onclick=plan;
+ $('v181go').onclick=()=>{v183Base=Date.now();v183Offset=0;plan()};$('v181results').addEventListener('click',e=>{const btn=e.target.closest('[data-time-offset]');if(btn){v183Offset=Number(btn.dataset.timeOffset);plan()}});
 // Integrate both pages into existing Explore menu.
-const menu=document.querySelector('.v18menu'),more=document.getElementById('v18more');if(menu){for(const [page,label] of [['findmy','↔ Trip Planner']]){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{menu.hidden=true;document.querySelectorAll('.v135nav button').forEach(x=>x.classList.remove('active'));more?.classList.add('active');document.body.className=document.body.className.replace(/\bv135-(home|metro|alerts|go|map|planner|announcements|ridership|projects|findmy|bustracker)\b/g,'').trim();document.body.classList.add('v135-'+page);document.querySelectorAll('[id^="v18"]')?.forEach(x=>{if(x.matches('section'))x.hidden=true});$('v181tracker').style.display=page==='bustracker'?'block':'none';$('v181findmy').style.display=page==='findmy'?'block':'none';if(page==='bustracker')renderBus();if(page==='findmy')plan()};menu.append(b)}}
-document.querySelectorAll('[data-tab],.v18menu button').forEach(el=>el.addEventListener('click',()=>{if(!el.textContent.includes('Live Bus Tracker')&&!el.textContent.includes('Find My Trip')){$('v181tracker').style.display='none';$('v181findmy').style.display='none'}}));
+const menu=document.querySelector('.v18menu'),more=document.getElementById('v18more');if(menu){for(const [page,label] of [['findmy','↔ Trip Planner']]){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{menu.hidden=true;document.querySelectorAll('.v135nav button').forEach(x=>x.classList.remove('active'));more?.classList.add('active');document.body.className=document.body.className.replace(/\bv135-(home|metro|alerts|go|map|planner|announcements|ridership|projects|findmy|bustracker)\b/g,'').trim();document.body.classList.add('v135-'+page);document.querySelectorAll('[id^="v18"]')?.forEach(x=>{if(x.matches('section'))x.hidden=true});if($('v181tracker'))$('v181tracker').style.display='none';$('v181findmy').style.display=page==='findmy'?'block':'none';if(page==='findmy')plan()};menu.append(b)}}
+document.querySelectorAll('[data-tab],.v18menu button').forEach(el=>el.addEventListener('click',()=>{if(!el.textContent.includes('Live Bus Tracker')&&!el.textContent.includes('Find My Trip')){if($('v181tracker'))$('v181tracker').style.display='none';$('v181findmy').style.display='none'}}));
 })();</script>
 <style id="v182-style">
 #v181tracker,#v18map,#v18ridership{display:none!important}
@@ -1405,7 +1437,7 @@ document.querySelectorAll('[data-tab],.v18menu button').forEach(el=>el.addEventL
 .v182leg small,.v182leg p{color:#bdc9d4}.v182leg p{font-size:12px}
 </style>
 <script id="v182-cleanup">(()=>{
- const remove=()=>{document.querySelectorAll('.v18menu [data-v18page="map"],.v18menu [data-v18page="ridership"],.v18menu [data-v18page="planner"],.v18quick [data-quick="map"],.v18quick [data-quick="ridership"],.v18quick [data-quick="planner"]').forEach(e=>e.remove());};remove();
+ const remove=()=>{document.getElementById('v18projects')?.remove();document.querySelectorAll('.v18menu button').forEach(b=>{if(/expansion|construction|projects/i.test(b.textContent))b.remove()});document.querySelectorAll('.v18menu [data-v18page="map"],.v18menu [data-v18page="ridership"],.v18menu [data-v18page="planner"],.v18quick [data-quick="map"],.v18quick [data-quick="ridership"],.v18quick [data-quick="planner"]').forEach(e=>e.remove());};remove();
  document.getElementById('v181tracker')?.remove();
  const old=document.getElementById('v18planner');if(old)old.remove();
  document.querySelector('#v181findmy h1').textContent='↔ Trip Planner';
